@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Generador de Tarjetas</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<header>
+
+<h1>Generador de Tarjetas</h1>
+
+<p>Crea tu tarjeta de presentación estilo bancaria</p>
+
+</header>
+
+
+<section class="controls">
+
+<input type="text" id="name" placeholder="Tu nombre">
+
+<input type="text" id="bank" placeholder="Banco emisor">
+
+<input type="file" id="logo" accept="image/png">
+
+<input type="color" id="color" value="#2c2c2c">
+
+<button onclick="generateCard()">Crear tarjeta</button>
+
+</section>
+
+
+<section class="preview">
+
+<div class="card" id="card">
+
+<img id="logoPreview">
+
+<div class="bank" id="bankName">Banco</div>
+
+<div class="name" id="cardName">Nombre</div>
+
+</div>
+
+</section>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
