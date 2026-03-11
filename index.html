@@ -2,677 +2,433 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>CardForge · Generador de Tarjetas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-/* ── RESET & VARS ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-:root {
-  --bg:       #0a0a0f;
-  --bg2:      #12121a;
-  --surface:  #1a1a26;
-  --surface2: #22223a;
-  --border:   rgba(255,255,255,.07);
-  --border2:  rgba(255,255,255,.13);
-  --text:     #e8e8f0;
-  --text2:    #8888aa;
-  --text3:    #4444668;
-  --gold:     #c9a84c;
-  --gold2:    #f0d080;
-  --accent:   #7c6fff;
-  --accent2:  #a593ff;
-  --red:      #ff5566;
-  --green:    #44ddaa;
-  --r:        16px;
-  --r-sm:     10px;
-  --card-w:   380px;
-  --card-h:   240px;
+:root{
+  --bg:#07080f;
+  --bg2:#0e0f1a;
+  --surface:#13141f;
+  --surface2:#1c1d2e;
+  --border:rgba(255,255,255,.06);
+  --border2:rgba(255,255,255,.11);
+  --text:#eceef8;
+  --text2:#7a7d9c;
+  --accent:#00d4ff;
+  --accent2:#38e8ff;
+  --accent-dim:rgba(0,212,255,.1);
+  --purple:#8b5cf6;
+  --purple2:#a78bfa;
+  --red:#ff4d6d;
+  --green:#00e5a0;
+  --r:14px;
+  --r-sm:9px;
+  --card-w:380px;
+  --card-h:240px;
 }
 
-html { scroll-behavior: smooth; }
-
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100dvh;
-  overflow-x: hidden;
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100dvh;overflow-x:hidden;
 }
-
-/* ── NOISE OVERLAY ── */
-body::before {
-  content: '';
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  opacity: .4;
-}
-
-/* ── GRADIENT BG ── */
-.bg-glow {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+.bg-glow{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
-    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(124,111,255,.08) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 35% at 80% 80%, rgba(201,168,76,.06) 0%, transparent 60%);
+    radial-gradient(ellipse 55% 35% at 15% 15%,rgba(0,212,255,.055) 0%,transparent 65%),
+    radial-gradient(ellipse 45% 30% at 85% 85%,rgba(139,92,246,.05) 0%,transparent 65%);
+}
+.app{
+  position:relative;z-index:1;
+  max-width:860px;margin:0 auto;
+  padding:28px 16px 72px;
+  display:flex;flex-direction:column;gap:30px;
 }
 
-/* ── LAYOUT ── */
-.app {
-  position: relative; z-index: 1;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 32px 20px 60px;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
+/* HEADER */
+header{text-align:center;padding-top:4px}
+.logo{display:inline-flex;align-items:center;gap:10px;margin-bottom:10px}
+.logo-icon{
+  width:38px;height:38px;
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:17px;box-shadow:0 0 22px rgba(0,212,255,.22);
 }
+.logo-text{
+  font-family:'Syne',sans-serif;font-size:22px;font-weight:800;
+  background:linear-gradient(90deg,var(--accent),var(--purple2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+header p{color:var(--text2);font-size:13px;font-weight:300}
 
-/* ── HEADER ── */
-header {
-  text-align: center;
+/* CARD */
+.card-scene-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.card-scene{
+  perspective:1400px;
+  width:var(--card-w);height:var(--card-h);
+  cursor:pointer;flex-shrink:0;
 }
-.logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
+.card-flipper{
+  width:100%;height:100%;position:relative;
+  transform-style:preserve-3d;
+  transition:transform .75s cubic-bezier(.4,0,.2,1);
 }
-.logo-icon {
-  width: 40px; height: 40px;
-  background: linear-gradient(135deg, var(--gold), var(--accent));
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
+.card-scene.flipped .card-flipper{transform:rotateY(180deg)}
+.card-face{
+  position:absolute;inset:0;border-radius:18px;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  overflow:hidden;
+  box-shadow:0 28px 70px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.07);
 }
-.logo-text {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  background: linear-gradient(90deg, var(--gold), var(--accent2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-header p {
-  color: var(--text2);
-  font-size: 14px;
-  font-weight: 300;
-}
+.card-back-face{transform:rotateY(180deg)}
 
-/* ── CARD SCENE ── */
-.card-scene {
-  perspective: 1200px;
-  width: var(--card-w);
-  height: var(--card-h);
-  margin: 0 auto;
-  cursor: pointer;
+/* FRONT */
+#cardFront{
+  padding:22px 26px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;
 }
-.card-flipper {
-  width: 100%; height: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform .7s cubic-bezier(.4,0,.2,1);
+.card-bg{
+  position:absolute;inset:0;z-index:0;
+  background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+  transition:background .45s ease;
 }
-.card-scene.flipped .card-flipper { transform: rotateY(180deg); }
+.card-bg::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.03) 43%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 57%,transparent 72%);
+  animation:shimmer 5s ease-in-out infinite;
+}
+@keyframes shimmer{0%,100%{opacity:0;transform:translateX(-120%)}50%{opacity:1;transform:translateX(120%)}}
+.card-bg::before{
+  content:'';position:absolute;width:300px;height:300px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.04);top:-90px;right:-70px;
+  box-shadow:0 0 0 70px rgba(255,255,255,.015);
+}
+.card-top,.card-mid,.card-bot{position:relative;z-index:1}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between}
+.card-logo-wrap{height:32px;max-width:110px;display:flex;align-items:center}
+.card-logo-wrap img{max-height:32px;max-width:110px;object-fit:contain;filter:brightness(0) invert(1);display:none}
+.bank-name-card{
+  font-size:12px;font-weight:700;letter-spacing:2.5px;
+  text-transform:uppercase;color:rgba(255,255,255,.9);
+  text-shadow:0 1px 4px rgba(0,0,0,.4);
+}
+.network-badge{display:flex;align-items:center}
+.mc-l{width:26px;height:26px;border-radius:50%;background:#eb001b;margin-right:-9px;opacity:.88}
+.mc-r{width:26px;height:26px;border-radius:50%;background:#f79e1b;opacity:.88}
+.card-chip{
+  width:42px;height:33px;border-radius:5px;
+  background:linear-gradient(135deg,#bbb 0%,#e8e8e8 35%,#aaa 70%,#d8d8d8 100%);
+  position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.45);
+}
+.card-chip::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 5px,rgba(0,0,0,.06) 5px,rgba(0,0,0,.06) 6px),
+             repeating-linear-gradient(90deg,transparent,transparent 5px,rgba(0,0,0,.06) 5px,rgba(0,0,0,.06) 6px);
+}
+.card-chip::after{
+  content:'';position:absolute;width:27px;height:20px;
+  border:1px solid rgba(0,0,0,.18);border-radius:3px;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+}
+.card-number{
+  font-family:'DM Mono',monospace;font-size:16px;letter-spacing:3px;
+  color:rgba(255,255,255,.9);text-shadow:0 1px 6px rgba(0,0,0,.4);
+  display:flex;gap:12px;flex-wrap:nowrap;
+}
+.card-bot{display:flex;justify-content:space-between;align-items:flex-end}
+.card-holder-label,.card-expiry-label{
+  font-size:8px;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(255,255,255,.38);margin-bottom:3px;
+}
+.card-holder-name{
+  font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(255,255,255,.95);text-shadow:0 1px 4px rgba(0,0,0,.3);
+  max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.card-expiry{text-align:right}
+.card-expiry-val{font-family:'DM Mono',monospace;font-size:13px;color:rgba(255,255,255,.9)}
 
-.card-face {
-  position: absolute; inset: 0;
-  border-radius: 18px;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  overflow: hidden;
-  box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06);
+/* BACK */
+.card-back-inner{
+  width:100%;height:100%;display:flex;flex-direction:column;
+  background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+  transition:background .45s ease;
 }
-.card-back {
-  transform: rotateY(180deg);
+.magstripe{width:100%;height:46px;background:#0a0a0a;margin-top:28px}
+.sig-area{margin:14px 24px 0;display:flex;align-items:center;gap:10px}
+.sig-strip{
+  flex:1;height:32px;border-radius:3px;
+  background:repeating-linear-gradient(-45deg,#fff 0,#fff 3px,#f0ecec 3px,#f0ecec 6px);
 }
+.cvv-box{
+  background:#fff;color:#111;font-family:'DM Mono',monospace;
+  font-size:13px;font-weight:600;padding:5px 10px;border-radius:4px;
+  letter-spacing:2px;min-width:48px;text-align:center;
+}
+.card-back-note{font-size:8.5px;color:rgba(255,255,255,.28);padding:10px 24px;line-height:1.55}
 
-/* ── CARD FRONT ── */
-.card-front {
-  padding: 24px 28px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
+.flip-hint{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:11.5px;color:var(--text2);opacity:.65;cursor:pointer;
+  transition:opacity .2s;user-select:none;
 }
-.card-bg {
-  position: absolute; inset: 0; z-index: 0;
-  background: var(--card-bg, linear-gradient(135deg, #1a1a2e 0%, #16213e 100%));
-  transition: background .4s ease;
-}
-/* Holographic shimmer */
-.card-bg::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(105deg,
-    transparent 30%,
-    rgba(255,255,255,.04) 45%,
-    rgba(255,255,255,.08) 50%,
-    rgba(255,255,255,.04) 55%,
-    transparent 70%
-  );
-  animation: shimmer 4s ease-in-out infinite;
-}
-@keyframes shimmer {
-  0%, 100% { opacity: 0; transform: translateX(-100%); }
-  50% { opacity: 1; transform: translateX(100%); }
-}
-/* Decorative circles */
-.card-bg::before {
-  content: '';
-  position: absolute;
-  width: 280px; height: 280px;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,.05);
-  top: -80px; right: -60px;
-  box-shadow: 0 0 0 60px rgba(255,255,255,.02);
-}
+.flip-hint:hover{opacity:1}
+.flip-hint svg{width:13px;height:13px;flex-shrink:0}
 
-.card-top, .card-mid, .card-bot { position: relative; z-index: 1; }
+/* AWARDS */
+.awards-strip{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.award-badge{
+  display:flex;align-items:center;gap:7px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:999px;padding:7px 14px;
+  font-size:12px;font-weight:500;color:var(--text2);
+  transition:border-color .2s,color .2s,box-shadow .2s;
+}
+.award-badge:hover{border-color:var(--accent);color:var(--text);box-shadow:0 0 12px rgba(0,212,255,.1)}
+.award-icon{font-size:15px}
+.award-val{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--accent2)}
 
-.card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+/* STATS */
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat-item{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:14px 12px;text-align:center;
+  position:relative;overflow:hidden;
+  transition:border-color .2s;
 }
-.card-logo-wrap {
-  height: 36px;
-  max-width: 120px;
-  display: flex;
-  align-items: center;
+.stat-item:hover{border-color:var(--border2)}
+.stat-item::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--accent-dim),transparent);
+  opacity:0;transition:opacity .3s;
 }
-.card-logo-wrap img {
-  max-height: 36px;
-  max-width: 120px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
-  display: none;
+.stat-item:hover::before{opacity:1}
+.stat-icon{font-size:18px;margin-bottom:5px;position:relative}
+.stat-val{
+  font-family:'Syne',sans-serif;font-size:20px;font-weight:700;
+  color:var(--accent2);margin-bottom:2px;position:relative;
 }
-.bank-name-card {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.9);
-  text-shadow: 0 1px 4px rgba(0,0,0,.3);
-}
-.network-badge {
-  display: flex;
-  align-items: center;
-  gap: -4px;
-}
-.network-badge .circle {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  opacity: .85;
-}
-.circle-left  { background: #eb001b; margin-right: -10px; }
-.circle-right { background: #f79e1b; }
+.stat-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text2);position:relative}
 
-/* Chip */
-.card-chip {
-  width: 44px; height: 34px;
-  border-radius: 5px;
-  background: linear-gradient(135deg, #d4a843 0%, #f0d07a 35%, #c4922a 70%, #e8c060 100%);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,.4);
+/* PANEL */
+.panel{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:24px;
 }
-.card-chip::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 6px,
-    rgba(0,0,0,.08) 6px, rgba(0,0,0,.08) 7px
-  ),
-  repeating-linear-gradient(
-    90deg, transparent, transparent 6px,
-    rgba(0,0,0,.08) 6px, rgba(0,0,0,.08) 7px
-  );
+.panel-title{
+  font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+  color:var(--text);margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;
 }
-.card-chip::after {
-  content: '';
-  position: absolute;
-  width: 28px; height: 22px;
-  border: 1px solid rgba(0,0,0,.2);
-  border-radius: 3px;
-  top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
+.panel-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:10.5px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--text2)}
+input[type=text],select{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r-sm);color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  padding:11px 13px;outline:none;width:100%;
+  transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;
 }
+input[type=text]:focus,select:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,.1);
+}
+input::placeholder{color:var(--text2);opacity:.5}
+select{
+  cursor:pointer;appearance:none;padding-right:34px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a7d9c' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+}
+select option{background:var(--bg2)}
 
-.card-number {
-  font-family: 'DM Mono', monospace;
-  font-size: 17px;
-  letter-spacing: 3px;
-  color: rgba(255,255,255,.9);
-  text-shadow: 0 1px 6px rgba(0,0,0,.4);
-  display: flex;
-  gap: 14px;
+/* Swatches */
+.color-row{display:flex;gap:8px;flex-wrap:wrap}
+.swatch{
+  width:30px;height:30px;border-radius:8px;cursor:pointer;
+  border:2px solid transparent;flex-shrink:0;
+  transition:transform .15s,border-color .15s,box-shadow .15s;
 }
-
-.card-bot {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+.swatch:hover{transform:scale(1.15)}
+.swatch.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,212,255,.3)}
+.swatch-custom{
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  background:conic-gradient(#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000);
+  font-size:14px;
 }
-.card-holder-label {
-  font-size: 9px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.4);
-  margin-bottom: 3px;
-}
-.card-holder-name {
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.95);
-  text-shadow: 0 1px 4px rgba(0,0,0,.3);
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.card-expiry {
-  text-align: right;
-}
-.card-expiry-label {
-  font-size: 8px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.4);
-  margin-bottom: 3px;
-}
-.card-expiry-val {
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  color: rgba(255,255,255,.9);
-}
-
-/* Contactless icon */
-.contactless {
-  position: absolute;
-  top: 24px; right: 28px;
-  z-index: 2;
-  opacity: .7;
-}
-.contactless svg { width: 22px; height: 22px; }
-
-/* ── CARD BACK ── */
-.card-back-inner {
-  width: 100%; height: 100%;
-  background: var(--card-bg, linear-gradient(135deg, #1a1a2e 0%, #16213e 100%));
-  display: flex;
-  flex-direction: column;
-  transition: background .4s ease;
-}
-.magstripe {
-  width: 100%; height: 50px;
-  background: #111;
-  margin-top: 30px;
-}
-.signature-area {
-  margin: 16px 28px 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.signature-strip {
-  flex: 1;
-  height: 34px;
-  background: repeating-linear-gradient(
-    -45deg,
-    #fff 0, #fff 3px,
-    #f0e8e8 3px, #f0e8e8 6px
-  );
-  border-radius: 3px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-}
-.cvv-box {
-  background: #fff;
-  color: #111;
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 6px 10px;
-  border-radius: 4px;
-  letter-spacing: 2px;
-  min-width: 50px;
-  text-align: center;
-}
-.card-back-note {
-  font-size: 9px;
-  color: rgba(255,255,255,.3);
-  padding: 12px 28px;
-  line-height: 1.5;
-}
-.flip-hint {
-  text-align: center;
-  font-size: 12px;
-  color: var(--text2);
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  opacity: .7;
-  transition: opacity .2s;
-}
-.flip-hint:hover { opacity: 1; cursor: pointer; }
-.flip-hint svg { width: 14px; height: 14px; }
-
-/* ── FORM PANEL ── */
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 28px;
-}
-.panel-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 17px;
-  color: var(--text);
-  margin-bottom: 22px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.panel-title::after {
-  content: '';
-  flex: 1; height: 1px;
-  background: var(--border);
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.form-group.full { grid-column: 1 / -1; }
-
-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  color: var(--text2);
-}
-
-input[type=text], input[type=file], select, textarea {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  padding: 11px 14px;
-  outline: none;
-  transition: border-color .2s, box-shadow .2s;
-  width: 100%;
-  -webkit-appearance: none;
-}
-input:focus, select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124,111,255,.12);
-}
-input::placeholder { color: var(--text2); opacity: .6; }
-select { cursor: pointer; appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238888aa' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 34px;
-}
-select option { background: var(--bg2); }
-
-/* Color swatches */
-.color-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.swatch {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: transform .15s, border-color .15s;
-  flex-shrink: 0;
-}
-.swatch:hover { transform: scale(1.12); }
-.swatch.active { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.3); }
-.swatch-custom {
-  position: relative;
-  overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-  background: conic-gradient(#ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
-  font-size: 16px;
-}
-.swatch-custom input[type=color] {
-  position: absolute; inset: 0;
-  opacity: 0;
-  cursor: pointer;
-  width: 100%; height: 100%;
-  padding: 0; border: none;
+.swatch-custom input[type=color]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;
+  width:100%;height:100%;padding:0;border:none;
 }
 
 /* File upload */
-.file-upload {
-  position: relative;
-  background: var(--bg2);
-  border: 1px dashed var(--border2);
-  border-radius: var(--r-sm);
-  padding: 14px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color .2s, background .2s;
+.file-upload{
+  position:relative;background:var(--bg2);
+  border:1px dashed var(--border2);border-radius:var(--r-sm);
+  padding:14px;text-align:center;cursor:pointer;
+  transition:border-color .2s,background .2s;
 }
-.file-upload:hover {
-  border-color: var(--accent);
-  background: rgba(124,111,255,.05);
+.file-upload:hover{border-color:var(--accent);background:rgba(0,212,255,.04)}
+.file-upload input[type=file]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;
+  width:100%;height:100%;padding:0;border:none;background:none;
 }
-.file-upload input {
-  position: absolute; inset: 0;
-  opacity: 0; cursor: pointer;
-  width: 100%; height: 100%;
-  padding: 0; border: none; background: none;
-}
-.file-upload-text {
-  font-size: 13px; color: var(--text2);
-  pointer-events: none;
-}
-.file-upload-text strong { color: var(--accent2); }
-.file-name { font-size: 11px; color: var(--green); margin-top: 4px; }
+.upload-text{font-size:13px;color:var(--text2);pointer-events:none}
+.upload-text strong{color:var(--accent2)}
+.file-name{font-size:11px;color:var(--green);margin-top:4px}
 
-/* Number display */
-.number-display {
-  font-family: 'DM Mono', monospace;
-  font-size: 18px;
-  letter-spacing: 4px;
-  color: var(--gold2);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  padding: 11px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* Number */
+.number-display{
+  font-family:'DM Mono',monospace;font-size:15px;letter-spacing:3px;
+  color:var(--accent2);background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:11px 13px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
 }
-.number-display .refresh-btn {
-  background: none; border: none;
-  color: var(--text2);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  transition: color .15s, background .15s;
-  display: flex; align-items: center;
+.num-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.refresh-btn{
+  background:none;border:none;color:var(--text2);cursor:pointer;
+  padding:4px;border-radius:6px;flex-shrink:0;
+  transition:color .15s,background .15s;display:flex;align-items:center;
 }
-.number-display .refresh-btn:hover {
-  color: var(--accent2);
-  background: rgba(124,111,255,.1);
-}
-.refresh-btn svg { width: 16px; height: 16px; }
+.refresh-btn:hover{color:var(--accent2);background:var(--accent-dim)}
+.refresh-btn svg{width:15px;height:15px}
 
-/* ── ACTIONS ── */
-.actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 22px;
+/* Buttons */
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-primary{
+  flex:1;min-width:140px;
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  border:none;border-radius:var(--r-sm);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  padding:13px 18px;cursor:pointer;
+  transition:opacity .2s,transform .15s,box-shadow .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 20px rgba(0,212,255,.18);
 }
-.btn-primary {
-  flex: 1;
-  background: linear-gradient(135deg, var(--accent), #9d8fff);
-  border: none;
-  border-radius: var(--r-sm);
-  color: #fff;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 13px 20px;
-  cursor: pointer;
-  transition: opacity .2s, transform .15s;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  letter-spacing: .3px;
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,212,255,.28)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-secondary{
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:var(--r-sm);color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;
+  padding:13px 16px;cursor:pointer;
+  transition:background .15s,transform .15s;
+  display:flex;align-items:center;gap:7px;white-space:nowrap;
 }
-.btn-primary:hover { opacity: .9; transform: translateY(-1px); }
-.btn-primary:active { transform: translateY(0); }
+.btn-secondary:hover{background:rgba(255,255,255,.06);transform:translateY(-1px)}
+.btn-secondary svg{width:15px;height:15px;flex-shrink:0}
 
-.btn-secondary {
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: var(--r-sm);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 13px 18px;
-  cursor: pointer;
-  transition: background .15s, transform .15s;
-  display: flex; align-items: center; gap: 7px;
+/* Download overlay */
+.dl-overlay{
+  display:none;position:fixed;inset:0;z-index:9998;
+  background:rgba(7,8,15,.75);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;flex-direction:column;gap:14px;
 }
-.btn-secondary:hover { background: rgba(255,255,255,.06); transform: translateY(-1px); }
-.btn-secondary svg { width: 16px; height: 16px; }
+.dl-overlay.show{display:flex}
+.dl-spinner{
+  width:44px;height:44px;border-radius:50%;
+  border:3px solid var(--border2);border-top-color:var(--accent);
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dl-label{font-size:13px;color:var(--text2)}
 
-/* ── TOAST ── */
-#toast {
-  position: fixed;
-  bottom: 28px; left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: 999px;
-  padding: 10px 20px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
-  box-shadow: 0 8px 32px rgba(0,0,0,.5);
-  z-index: 9999;
-  transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s;
-  display: flex; align-items: center; gap: 8px;
-  pointer-events: none;
-  opacity: 0;
+/* Toast */
+#toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(70px);
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:999px;padding:10px 18px;
+  font-size:13px;font-weight:500;color:var(--text);
+  box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:9999;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  display:flex;align-items:center;gap:8px;pointer-events:none;opacity:0;
 }
-#toast.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
-#toast.success .toast-icon { color: var(--green); }
-#toast.error   .toast-icon { color: var(--red); }
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+#toast.success .t-icon{color:var(--green)}
+#toast.error   .t-icon{color:var(--red)}
 
-/* ── STATS BAR ── */
-.stats-bar {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+/* RESPONSIVE */
+@media(max-width:640px){
+  :root{
+    --card-w:min(360px,calc(100vw - 32px));
+    --card-h:calc(var(--card-w) * 0.63);
+  }
+  .app{padding:18px 14px 60px;gap:22px}
+  .form-grid{grid-template-columns:1fr}
+  .form-group.full{grid-column:1}
+  .panel{padding:18px 14px}
+  .card-number{font-size:13px;letter-spacing:2px;gap:9px}
+  .bank-name-card{font-size:10.5px;letter-spacing:1.5px}
+  #cardFront{padding:18px 20px}
+  .stats-bar{grid-template-columns:1fr 1fr}
+  .stats-bar .stat-item:last-child{grid-column:1/-1}
+  .awards-strip{gap:6px}
+  .award-badge{padding:6px 11px;font-size:11px}
+  .award-icon{font-size:13px}
+  .actions{gap:8px}
+  .btn-primary,.btn-secondary{padding:12px 14px;font-size:13px}
+  .number-display{font-size:13px;letter-spacing:2px}
 }
-.stat-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  padding: 14px 16px;
-  text-align: center;
-}
-.stat-val {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  color: var(--gold2);
-  margin-bottom: 2px;
-}
-.stat-lbl {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .8px;
-  color: var(--text2);
-}
-
-/* ── RESPONSIVE ── */
-@media (max-width: 600px) {
-  :root { --card-w: min(340px, 92vw); --card-h: 215px; }
-  .app { padding: 20px 14px 50px; gap: 28px; }
-  .form-grid { grid-template-columns: 1fr; }
-  .form-group.full { grid-column: 1; }
-  .panel { padding: 20px 16px; }
-  .card-number { font-size: 14px; letter-spacing: 2px; gap: 10px; }
-  .bank-name-card { font-size: 11px; }
-  .stats-bar { grid-template-columns: 1fr 1fr; }
-  .stats-bar .stat-item:last-child { grid-column: 1 / -1; }
-  .actions { flex-direction: column; }
-}
-@media (max-width: 380px) {
-  :root { --card-w: 94vw; --card-h: 200px; }
-  .card-number { font-size: 12px; gap: 8px; }
+@media(max-width:380px){
+  :root{--card-w:calc(100vw - 28px)}
+  .card-number{font-size:11.5px;gap:7px;letter-spacing:1.5px}
+  .card-chip{width:36px;height:28px}
+  .mc-l,.mc-r{width:22px;height:22px}
+  .card-holder-name{font-size:11px}
+  .awards-strip{flex-direction:column;align-items:stretch}
+  .award-badge{justify-content:center}
 }
 </style>
 </head>
 <body>
 <div class="bg-glow"></div>
 
+<div class="dl-overlay" id="dlOverlay">
+  <div class="dl-spinner"></div>
+  <div class="dl-label">Generando imagen PNG…</div>
+</div>
+
 <div class="app">
 
-  <!-- HEADER -->
   <header>
     <div class="logo">
       <div class="logo-icon">💳</div>
       <span class="logo-text">CardForge</span>
     </div>
-    <p>Diseña tu tarjeta de presentación con estilo premium</p>
+    <p>Diseña tu tarjeta premium en segundos</p>
   </header>
 
-  <!-- CARD PREVIEW -->
-  <div>
+  <!-- CARD -->
+  <div class="card-scene-wrap">
     <div class="card-scene" id="cardScene" onclick="flipCard()">
-      <div class="card-flipper" id="cardFlipper">
+      <div class="card-flipper">
 
-        <!-- FRONT -->
-        <div class="card-face card-front" id="cardFront">
+        <div class="card-face" id="cardFront">
           <div class="card-bg" id="cardBg"></div>
-
           <div class="card-top">
             <div class="card-logo-wrap">
               <img id="cardLogoImg" alt="logo">
               <span class="bank-name-card" id="cardBankName">BANCO EMISOR</span>
             </div>
             <div class="network-badge" id="networkBadge">
-              <div class="circle circle-left"></div>
-              <div class="circle circle-right"></div>
+              <div class="mc-l"></div><div class="mc-r"></div>
             </div>
           </div>
-
-          <div class="card-mid">
-            <div class="card-chip"></div>
-          </div>
-
+          <div class="card-mid"><div class="card-chip"></div></div>
           <div class="card-number" id="cardNumber">
             <span>••••</span><span>••••</span><span>••••</span><span>••••</span>
           </div>
-
           <div class="card-bot">
             <div>
               <div class="card-holder-label">Titular</div>
@@ -685,16 +441,15 @@ select option { background: var(--bg2); }
           </div>
         </div>
 
-        <!-- BACK -->
-        <div class="card-face card-back">
+        <div class="card-face card-back-face">
           <div class="card-back-inner" id="cardBack">
             <div class="magstripe"></div>
-            <div class="signature-area">
-              <div class="signature-strip"></div>
+            <div class="sig-area">
+              <div class="sig-strip"></div>
               <div class="cvv-box" id="cardCVV">•••</div>
             </div>
             <div class="card-back-note">
-              Esta tarjeta es propiedad del banco emisor. Su uso está sujeto a los términos y condiciones del contrato de adhesión. Reporte pérdida o robo al número de atención al cliente.
+              Esta tarjeta es propiedad del banco emisor. Uso sujeto a términos y condiciones. Reporte pérdida inmediatamente al servicio al cliente.
             </div>
           </div>
         </div>
@@ -702,30 +457,59 @@ select option { background: var(--bg2); }
       </div>
     </div>
     <div class="flip-hint" onclick="flipCard()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
       Toca para ver el reverso
+    </div>
+  </div>
+
+  <!-- AWARDS -->
+  <div class="awards-strip">
+    <div class="award-badge">
+      <span class="award-icon">🏆</span>
+      <span>Creadas:</span>
+      <span class="award-val" id="awardCount">0</span>
+    </div>
+    <div class="award-badge">
+      <span class="award-icon">🥇</span>
+      <span>Red:</span>
+      <span class="award-val" id="awardNetwork">MC</span>
+    </div>
+    <div class="award-badge">
+      <span class="award-icon">🎖️</span>
+      <span>Vigencia:</span>
+      <span class="award-val" id="awardExpiry">—</span>
+    </div>
+    <div class="award-badge">
+      <span class="award-icon">⭐</span>
+      <span>Descargas:</span>
+      <span class="award-val" id="awardDownloads">0</span>
     </div>
   </div>
 
   <!-- STATS -->
   <div class="stats-bar">
     <div class="stat-item">
+      <div class="stat-icon">🏆</div>
       <div class="stat-val" id="statCards">0</div>
-      <div class="stat-lbl">Tarjetas creadas</div>
+      <div class="stat-lbl">Tarjetas</div>
     </div>
     <div class="stat-item">
-      <div class="stat-val" id="statNetwork">—</div>
-      <div class="stat-lbl">Red activa</div>
+      <div class="stat-icon">💎</div>
+      <div class="stat-val" id="statNetwork">MC</div>
+      <div class="stat-lbl">Red</div>
     </div>
     <div class="stat-item">
+      <div class="stat-icon">📅</div>
       <div class="stat-val" id="statExpiry">—</div>
-      <div class="stat-lbl">Meses restantes</div>
+      <div class="stat-lbl">Meses</div>
     </div>
   </div>
 
   <!-- FORM -->
   <div class="panel">
-    <div class="panel-title">Datos de la tarjeta</div>
+    <div class="panel-title">✦ Personaliza tu tarjeta</div>
     <div class="form-grid">
 
       <div class="form-group">
@@ -739,8 +523,8 @@ select option { background: var(--bg2); }
       </div>
 
       <div class="form-group">
-        <label for="inputExpiry">Fecha de vencimiento</label>
-        <input type="text" id="inputExpiry" placeholder="MM/AA" maxlength="5" autocomplete="off">
+        <label for="inputExpiry">Vencimiento (MM/AA)</label>
+        <input type="text" id="inputExpiry" placeholder="12/28" maxlength="5" inputmode="numeric" autocomplete="off">
       </div>
 
       <div class="form-group">
@@ -756,8 +540,8 @@ select option { background: var(--bg2); }
       <div class="form-group full">
         <label>Número de tarjeta</label>
         <div class="number-display">
-          <span id="numDisplay">•••• •••• •••• ••••</span>
-          <button class="refresh-btn" onclick="generateNumber()" title="Generar número aleatorio">
+          <span class="num-text" id="numDisplay">•••• •••• •••• ••••</span>
+          <button class="refresh-btn" onclick="generateNumber()" title="Generar número">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
@@ -766,30 +550,27 @@ select option { background: var(--bg2); }
       </div>
 
       <div class="form-group full">
-        <label>Color de la tarjeta</label>
+        <label>Color de tarjeta</label>
         <div class="color-row">
-          <div class="swatch active" style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e)" data-gradient="linear-gradient(135deg,#0f0c29,#302b63,#24243e)" onclick="setGradient(this)"></div>
-          <div class="swatch" style="background:linear-gradient(135deg,#134e5e,#71b280)" data-gradient="linear-gradient(135deg,#134e5e,#71b280)" onclick="setGradient(this)"></div>
-          <div class="swatch" style="background:linear-gradient(135deg,#1a1a2e,#e94560)" data-gradient="linear-gradient(135deg,#1a1a2e,#e94560)" onclick="setGradient(this)"></div>
-          <div class="swatch" style="background:linear-gradient(135deg,#c9a84c,#7b4f12)" data-gradient="linear-gradient(135deg,#7b4f12,#c9a84c)" onclick="setGradient(this)"></div>
-          <div class="swatch" style="background:linear-gradient(135deg,#141e30,#243b55)" data-gradient="linear-gradient(135deg,#141e30,#243b55)" onclick="setGradient(this)"></div>
-          <div class="swatch" style="background:linear-gradient(135deg,#200122,#6f0000)" data-gradient="linear-gradient(135deg,#200122,#6f0000)" onclick="setGradient(this)"></div>
-          <div class="swatch" style="background:linear-gradient(135deg,#1a1a1a,#3a3a3a)" data-gradient="linear-gradient(135deg,#1a1a1a,#3a3a3a)" onclick="setGradient(this)"></div>
-          <div class="swatch swatch-custom" title="Color personalizado">
-            🎨
-            <input type="color" id="customColor" value="#1a1a2e" onchange="setCustomColor(this.value)">
+          <div class="swatch active" style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e)" data-g="linear-gradient(135deg,#0f0c29,#302b63,#24243e)" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:linear-gradient(135deg,#000428,#004e92)" data-g="linear-gradient(135deg,#000428,#004e92)" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:linear-gradient(135deg,#134e5e,#71b280)" data-g="linear-gradient(135deg,#134e5e,#71b280)" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:linear-gradient(135deg,#1a1a2e,#e94560)" data-g="linear-gradient(135deg,#1a1a2e,#e94560)" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:linear-gradient(135deg,#0f2027,#203a43,#2c5364)" data-g="linear-gradient(135deg,#0f2027,#203a43,#2c5364)" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:linear-gradient(135deg,#200122,#6f0000)" data-g="linear-gradient(135deg,#200122,#6f0000)" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:linear-gradient(135deg,#1a1a1a,#3a3a3a)" data-g="linear-gradient(135deg,#1a1a1a,#3a3a3a)" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:linear-gradient(135deg,#1f4037,#99f2c8)" data-g="linear-gradient(135deg,#1f4037,#99f2c8)" onclick="setSwatch(this)"></div>
+          <div class="swatch swatch-custom" title="Color libre">
+            🎨<input type="color" id="customColor" value="#1a1a2e" onchange="setCustomColor(this.value)">
           </div>
         </div>
       </div>
 
       <div class="form-group full">
-        <label>Logo del banco (PNG, máx. 2MB)</label>
+        <label>Logo del banco (PNG · JPG · SVG, máx. 2MB)</label>
         <div class="file-upload" id="fileUpload">
           <input type="file" id="inputLogo" accept="image/png,image/jpeg,image/svg+xml" onchange="handleLogo(this)">
-          <div class="file-upload-text">
-            <strong>Seleccionar archivo</strong> o arrastra aquí<br>
-            <span style="font-size:11px;opacity:.6">PNG · JPG · SVG</span>
-          </div>
+          <div class="upload-text"><strong>Seleccionar archivo</strong> o arrastra aquí</div>
           <div class="file-name" id="fileName"></div>
         </div>
       </div>
@@ -798,235 +579,240 @@ select option { background: var(--bg2); }
 
     <div class="actions">
       <button class="btn-primary" onclick="applyCard()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 13l4 4L19 7"/></svg>
         Actualizar tarjeta
       </button>
-      <button class="btn-secondary" onclick="downloadCard()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Exportar
+      <button class="btn-secondary" id="btnDownload" onclick="downloadCard()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Descargar PNG
       </button>
       <button class="btn-secondary" onclick="resetCard()" title="Reiniciar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+        </svg>
       </button>
     </div>
   </div>
 
 </div>
 
-<!-- TOAST -->
 <div id="toast">
-  <span class="toast-icon" id="toastIcon">✓</span>
+  <span class="t-icon" id="toastIcon">✓</span>
   <span id="toastMsg">Listo</span>
 </div>
 
 <script>
-/* ── STATE ── */
-let state = {
-  name:    'NOMBRE APELLIDO',
-  bank:    'BANCO EMISOR',
-  expiry:  '12/28',
-  network: 'mastercard',
-  number:  '',
-  gradient:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)',
-  logo:    null,
-  cvv:     '',
-  count:   0,
-};
+let state = { gradient:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)', count:0, downloads:0 };
 
-/* ── INIT ── */
-generateNumber();
-updateCVV();
-updateStats();
-applyCard();
+/* INIT */
+generateNumber(); generateCVV(); applyCard(false); updateStats();
 
-/* ── LIVE PREVIEW ── */
-document.getElementById('inputName').addEventListener('input', e => {
-  const v = e.target.value.trim().toUpperCase() || 'NOMBRE APELLIDO';
-  document.getElementById('cardHolderName').textContent = v;
-});
+/* LIVE */
+document.getElementById('inputName').addEventListener('input', e =>
+  document.getElementById('cardHolderName').textContent =
+    e.target.value.trim().toUpperCase() || 'NOMBRE APELLIDO');
+
 document.getElementById('inputBank').addEventListener('input', e => {
-  const v = e.target.value.trim().toUpperCase() || 'BANCO EMISOR';
-  document.getElementById('cardBankName').textContent = v;
+  if(document.getElementById('cardLogoImg').style.display !== 'block')
+    document.getElementById('cardBankName').textContent =
+      e.target.value.trim().toUpperCase() || 'BANCO EMISOR';
 });
+
 document.getElementById('inputExpiry').addEventListener('input', e => {
   let v = e.target.value.replace(/\D/g,'');
-  if(v.length > 2) v = v.slice(0,2) + '/' + v.slice(2,4);
+  if(v.length > 2) v = v.slice(0,2)+'/'+v.slice(2,4);
   e.target.value = v;
   document.getElementById('cardExpiry').textContent = v || '••/••';
   updateStats();
 });
+
 document.getElementById('inputNetwork').addEventListener('change', e => {
-  renderNetwork(e.target.value);
-  updateStats();
+  renderNetwork(e.target.value); updateStats();
 });
 
-/* ── NUMBER GEN ── */
+/* NUMBER */
 function generateNumber() {
-  const grp = () => String(Math.floor(1000 + Math.random()*9000));
-  state.number = `${grp()} ${grp()} ${grp()} ${grp()}`;
-  document.getElementById('numDisplay').textContent = state.number;
-  const parts = state.number.split(' ');
-  const el = document.getElementById('cardNumber');
-  el.innerHTML = parts.map((p,i) => `<span>${i === 2 ? '••••' : p}</span>`).join('');
+  const g = () => String(Math.floor(1000+Math.random()*9000));
+  const num = `${g()} ${g()} ${g()} ${g()}`;
+  state.number = num;
+  document.getElementById('numDisplay').textContent = num;
+  document.getElementById('cardNumber').innerHTML =
+    num.split(' ').map((p,i) => `<span>${i===2?'••••':p}</span>`).join('');
 }
 
-/* ── CVV ── */
-function updateCVV() {
-  state.cvv = String(Math.floor(100 + Math.random()*900));
+/* CVV */
+function generateCVV() {
+  state.cvv = String(Math.floor(100+Math.random()*900));
   document.getElementById('cardCVV').textContent = state.cvv;
 }
 
-/* ── GRADIENT ── */
-function setGradient(el) {
+/* GRADIENT */
+function setSwatch(el) {
   document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
   el.classList.add('active');
-  const g = el.dataset.gradient;
-  state.gradient = g;
-  applyGradient(g);
+  state.gradient = el.dataset.g;
+  applyBg(state.gradient);
 }
 function setCustomColor(hex) {
-  const g = `linear-gradient(135deg,${hex},${lighten(hex)})`;
-  state.gradient = g;
-  applyGradient(g);
+  const g = `linear-gradient(135deg,${hex},${lighten(hex,45)})`;
+  state.gradient = g; applyBg(g);
   document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
   document.querySelector('.swatch-custom').classList.add('active');
 }
-function applyGradient(g) {
+function applyBg(g) {
   document.getElementById('cardBg').style.background = g;
   document.getElementById('cardBack').style.background = g;
 }
-function lighten(hex) {
-  const n = parseInt(hex.slice(1),16);
-  const r = Math.min(255, ((n>>16)&255)+40).toString(16).padStart(2,'0');
-  const g = Math.min(255, ((n>>8)&255)+40).toString(16).padStart(2,'0');
-  const b = Math.min(255, (n&255)+40).toString(16).padStart(2,'0');
-  return `#${r}${g}${b}`;
+function lighten(hex, a) {
+  if(!hex.startsWith('#')||hex.length<7) return hex;
+  const n=parseInt(hex.slice(1),16);
+  return '#'+[n>>16,n>>8&255,n&255].map(c=>Math.min(255,c+a).toString(16).padStart(2,'0')).join('');
 }
 
-/* ── NETWORK BADGE ── */
+/* NETWORK */
 function renderNetwork(net) {
-  const badge = document.getElementById('networkBadge');
-  if(net === 'mastercard') {
-    badge.innerHTML = `<div class="circle circle-left"></div><div class="circle circle-right"></div>`;
-  } else if(net === 'visa') {
-    badge.innerHTML = `<span style="font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:#fff;letter-spacing:-1px;opacity:.9">VISA</span>`;
-  } else if(net === 'amex') {
-    badge.innerHTML = `<span style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:#fff;letter-spacing:1px;opacity:.9;border:1px solid rgba(255,255,255,.5);padding:3px 6px;border-radius:3px">AMEX</span>`;
-  } else {
-    badge.innerHTML = '';
-  }
+  const b = document.getElementById('networkBadge');
+  if(net==='mastercard')
+    b.innerHTML = `<div class="mc-l"></div><div class="mc-r"></div>`;
+  else if(net==='visa')
+    b.innerHTML = `<span style="font-family:'DM Mono',monospace;font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.5px;opacity:.92">VISA</span>`;
+  else if(net==='amex')
+    b.innerHTML = `<span style="font-family:'DM Mono',monospace;font-size:9.5px;font-weight:700;color:#fff;letter-spacing:1px;opacity:.9;border:1.5px solid rgba(255,255,255,.5);padding:2px 6px;border-radius:3px">AMEX</span>`;
+  else b.innerHTML = '';
 }
 
-/* ── LOGO UPLOAD ── */
+/* LOGO */
 function handleLogo(input) {
-  const file = input.files[0];
-  if(!file) return;
-  if(file.size > 2*1024*1024) { showToast('El archivo supera 2MB', 'error'); return; }
-  const allowed = ['image/png','image/jpeg','image/svg+xml'];
-  if(!allowed.includes(file.type)) { showToast('Formato no permitido', 'error'); return; }
+  const file = input.files[0]; if(!file) return;
+  if(file.size>2097152){showToast('El archivo supera 2MB','error');return}
+  if(!['image/png','image/jpeg','image/svg+xml'].includes(file.type)){showToast('Formato no permitido','error');return}
   document.getElementById('fileName').textContent = `✓ ${file.name}`;
-  const reader = new FileReader();
-  reader.onload = e => {
-    state.logo = e.target.result;
+  const fr = new FileReader();
+  fr.onload = e => {
     const img = document.getElementById('cardLogoImg');
-    img.src = e.target.result;
-    img.style.display = 'block';
-    document.getElementById('cardBankName').style.display = 'none';
+    img.src=e.target.result; img.style.display='block';
+    document.getElementById('cardBankName').style.display='none';
   };
-  reader.readAsDataURL(file);
+  fr.readAsDataURL(file);
 }
 
-/* ── FLIP ── */
-function flipCard() {
-  document.getElementById('cardScene').classList.toggle('flipped');
-}
+/* FLIP */
+function flipCard(){ document.getElementById('cardScene').classList.toggle('flipped'); }
 
-/* ── APPLY ── */
-function applyCard() {
-  const name = document.getElementById('inputName').value.trim().toUpperCase() || 'NOMBRE APELLIDO';
-  const bank = document.getElementById('inputBank').value.trim().toUpperCase() || 'BANCO EMISOR';
+/* APPLY */
+function applyCard(toast=true) {
+  const name   = document.getElementById('inputName').value.trim().toUpperCase() || 'NOMBRE APELLIDO';
+  const bank   = document.getElementById('inputBank').value.trim().toUpperCase() || 'BANCO EMISOR';
   const expiry = document.getElementById('inputExpiry').value || '12/28';
-  const net = document.getElementById('inputNetwork').value;
-
+  const net    = document.getElementById('inputNetwork').value;
   document.getElementById('cardHolderName').textContent = name;
-  document.getElementById('cardBankName').textContent = bank;
+  if(document.getElementById('cardLogoImg').style.display!=='block')
+    document.getElementById('cardBankName').textContent = bank;
   document.getElementById('cardExpiry').textContent = expiry;
-  renderNetwork(net);
-  applyGradient(state.gradient);
-  updateCVV();
+  renderNetwork(net); applyBg(state.gradient); generateCVV();
   state.count++;
-  document.getElementById('statCards').textContent = state.count;
   updateStats();
-  showToast('¡Tarjeta actualizada!', 'success');
+  if(toast) showToast('¡Tarjeta actualizada! 🎉','success');
 }
 
-/* ── STATS ── */
+/* STATS */
 function updateStats() {
-  const net = document.getElementById('inputNetwork');
-  const netLabel = {mastercard:'MC', visa:'Visa', amex:'Amex', none:'—'};
-  document.getElementById('statNetwork').textContent = netLabel[net.value] || '—';
-
-  const expiryVal = document.getElementById('inputExpiry').value;
-  if(expiryVal && expiryVal.includes('/')) {
-    const [mm, yy] = expiryVal.split('/').map(Number);
-    const now = new Date();
-    const months = (2000+yy - now.getFullYear())*12 + mm - (now.getMonth()+1);
-    document.getElementById('statExpiry').textContent = months > 0 ? months : '—';
+  const net = document.getElementById('inputNetwork').value;
+  const lbl = {mastercard:'MC',visa:'Visa',amex:'Amex',none:'—'};
+  document.getElementById('statCards').textContent  = state.count;
+  document.getElementById('awardCount').textContent = state.count;
+  document.getElementById('statNetwork').textContent  = lbl[net]||'—';
+  document.getElementById('awardNetwork').textContent = lbl[net]||'—';
+  const ev = document.getElementById('inputExpiry').value;
+  if(ev&&ev.includes('/')) {
+    const [mm,yy]=ev.split('/').map(Number);
+    const now=new Date();
+    const m=(2000+yy-now.getFullYear())*12+mm-(now.getMonth()+1);
+    const v = m>0 ? m : '—';
+    document.getElementById('statExpiry').textContent  = v;
+    document.getElementById('awardExpiry').textContent = v;
   } else {
-    document.getElementById('statExpiry').textContent = '—';
+    document.getElementById('statExpiry').textContent  = '—';
+    document.getElementById('awardExpiry').textContent = '—';
   }
+  document.getElementById('awardDownloads').textContent = state.downloads;
 }
 
-/* ── RESET ── */
+/* RESET */
 function resetCard() {
-  document.getElementById('inputName').value = '';
-  document.getElementById('inputBank').value = '';
-  document.getElementById('inputExpiry').value = '';
+  ['inputName','inputBank','inputExpiry'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('inputNetwork').value = 'mastercard';
   document.getElementById('fileName').textContent = '';
   document.getElementById('inputLogo').value = '';
-  document.getElementById('cardLogoImg').style.display = 'none';
-  document.getElementById('cardBankName').style.display = '';
-  state.logo = null;
+  document.getElementById('cardLogoImg').style.display='none';
+  document.getElementById('cardBankName').style.display='';
   state.gradient = 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)';
-  document.querySelectorAll('.swatch').forEach((s,i) => s.classList.toggle('active', i===0));
-  generateNumber();
-  applyCard();
-  showToast('Reiniciado', 'success');
+  document.querySelectorAll('.swatch').forEach((s,i)=>s.classList.toggle('active',i===0));
+  document.getElementById('cardScene').classList.remove('flipped');
+  generateNumber(); applyCard(false);
+  showToast('Reiniciado','success');
 }
 
-/* ── DOWNLOAD ── */
-function downloadCard() {
-  // Use html2canvas if available, otherwise show hint
-  showToast('Usa la captura de pantalla del sistema para guardar', 'success');
-}
-
-/* ── TOAST ── */
-let toastTO;
-function showToast(msg, type='success') {
-  const el = document.getElementById('toast');
-  const icon = document.getElementById('toastIcon');
-  const txt = document.getElementById('toastMsg');
-  icon.textContent = type === 'success' ? '✓' : '✕';
-  txt.textContent = msg;
-  el.className = `show ${type}`;
-  clearTimeout(toastTO);
-  toastTO = setTimeout(() => { el.className = ''; }, 2600);
-}
-
-/* ── DRAG & DROP logo ── */
-const fu = document.getElementById('fileUpload');
-fu.addEventListener('dragover', e => { e.preventDefault(); fu.style.borderColor='var(--accent)'; });
-fu.addEventListener('dragleave', () => { fu.style.borderColor=''; });
-fu.addEventListener('drop', e => {
-  e.preventDefault(); fu.style.borderColor='';
-  const file = e.dataTransfer.files[0];
-  if(file) {
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    document.getElementById('inputLogo').files = dt.files;
-    handleLogo(document.getElementById('inputLogo'));
+/* DOWNLOAD — real PNG via html2canvas */
+async function downloadCard() {
+  const btn = document.getElementById('btnDownload');
+  const overlay = document.getElementById('dlOverlay');
+  const scene = document.getElementById('cardScene');
+  const wasFlipped = scene.classList.contains('flipped');
+  if(wasFlipped) scene.classList.remove('flipped');
+  btn.disabled = true;
+  overlay.classList.add('show');
+  await new Promise(r => setTimeout(r, wasFlipped ? 450 : 60));
+  try {
+    const canvas = await html2canvas(document.getElementById('cardFront'), {
+      backgroundColor: null,
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      removeContainer: true,
+    });
+    const name = (document.getElementById('inputName').value.trim() || 'tarjeta')
+      .toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const a = document.createElement('a');
+    a.download = `cardforge-${name}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    state.downloads++; updateStats();
+    showToast('¡PNG descargado! 📥','success');
+  } catch(err) {
+    showToast('No se pudo generar la imagen','error');
+    console.error(err);
+  } finally {
+    overlay.classList.remove('show');
+    btn.disabled = false;
   }
+}
+
+/* TOAST */
+let toastTO;
+function showToast(msg,type='success'){
+  const el=document.getElementById('toast');
+  document.getElementById('toastIcon').textContent=type==='success'?'✓':'✕';
+  document.getElementById('toastMsg').textContent=msg;
+  el.className=`show ${type}`;
+  clearTimeout(toastTO);
+  toastTO=setTimeout(()=>{el.className=''},2800);
+}
+
+/* DRAG & DROP */
+const fu = document.getElementById('fileUpload');
+fu.addEventListener('dragover',  e=>{e.preventDefault();fu.style.borderColor='var(--accent)'});
+fu.addEventListener('dragleave', ()=>{fu.style.borderColor=''});
+fu.addEventListener('drop', e=>{
+  e.preventDefault(); fu.style.borderColor='';
+  const file=e.dataTransfer.files[0]; if(!file) return;
+  const dt=new DataTransfer(); dt.items.add(file);
+  const inp=document.getElementById('inputLogo');
+  inp.files=dt.files; handleLogo(inp);
 });
 </script>
 </body>
