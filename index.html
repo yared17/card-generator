@@ -968,14 +968,14 @@ async function downloadCard(){
 /* ── COPY ── */
 async function copyText(txt){
   if(!txt||txt.includes('•')) return;
-  try{await navigator.clipboard.writeText(txt.replace(/\s+/g,''));showToast('Copiado','ok')}
+  try{await navigator.clipboard.writeText(txt.replace(/\s+/g,''));showToast('Copiado','Ok')}
   catch{showToast('No se pudo copiar','err')}
 }
 
 /* ── TOAST ── */
 let tTO;
 function showToast(msg,type='ok'){
-  
+
   const el=document.getElementById('toast');
   document.getElementById('tMsg').textContent=msg;
   el.className=`show ${type}`;
