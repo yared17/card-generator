@@ -975,6 +975,7 @@ async function copyText(txt){
 /* ── TOAST ── */
 let tTO;
 function showToast(msg,type='ok'){
+  
   const el=document.getElementById('toast');
   document.getElementById('tMsg').textContent=msg;
   el.className=`show ${type}`;
