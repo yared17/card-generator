@@ -1,17 +1,39 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>CardForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-:root{
+/* ── THEME TOKENS ── */
+[data-theme="dark"]{
+  --bg:      #0c0c0f;
+  --bg2:     #111116;
+  --paper:   #16161d;
+  --white:   #1e1e28;
+  --border:  #2a2a38;
+  --border2: #3d3d52;
+  --text:    #e8e6f0;
+  --muted:   #7a7898;
+  --dim:     #4a4864;
+  --ink:     #e8e6f0;
+  --accent:  #a78bfa;
+  --accent2: #7c3aed;
+  --green:   #34d399;
+  --red:     #f87171;
+  --amber:   #fbbf24;
+  --purple:  #a78bfa;
+  --glow:    rgba(167,139,250,0.15);
+  --card-shine: rgba(255,255,255,0.07);
+}
+[data-theme="light"]{
   --bg:      #f0ede8;
+  --bg2:     #e8e4de;
   --paper:   #faf9f7;
   --white:   #ffffff;
   --border:  #e0dbd4;
@@ -20,61 +42,160 @@
   --muted:   #7a7168;
   --dim:     #b0a89e;
   --ink:     #1c1916;
-  --blue:    #1d4ed8;
-  --blue-lt: #2563eb;
+  --accent:  #6d28d9;
+  --accent2: #5b21b6;
   --green:   #15803d;
   --red:     #b91c1c;
   --amber:   #b45309;
   --purple:  #6d28d9;
+  --glow:    rgba(109,40,217,0.1);
+  --card-shine: rgba(255,255,255,0.12);
+}
+
+:root{
   --r:       10px;
   --r-sm:    7px;
-  /* Exact credit card ratio: 85.6mm × 54mm = 1.5852 */
-  --card-w: 296px;
-  --card-h: 187px;
+  --card-w:  296px;
+  --card-h:  187px;
   --sidebar: 380px;
+  --ease-spring: cubic-bezier(0.34,1.56,0.64,1);
+  --ease-out: cubic-bezier(0.16,1,0.3,1);
 }
 
 html{scroll-behavior:smooth}
 body{
-  font-family:'Inter',sans-serif;
+  font-family:'Space Grotesk',sans-serif;
   background:var(--bg);
   color:var(--text);
   min-height:100dvh;
   font-size:14px;
   line-height:1.5;
+  transition:background .4s ease,color .4s ease;
+  overflow-x:hidden;
 }
 
-/* ── PAGE ENTER ANIMATION ── */
+/* ── AMBIENT GLOW BG ── */
+body::before{
+  content:'';
+  position:fixed;top:-200px;right:-200px;
+  width:600px;height:600px;
+  border-radius:50%;
+  background:radial-gradient(circle, var(--glow) 0%, transparent 70%);
+  pointer-events:none;z-index:0;
+  transition:background .4s ease;
+}
+body::after{
+  content:'';
+  position:fixed;bottom:-150px;left:-100px;
+  width:400px;height:400px;
+  border-radius:50%;
+  background:radial-gradient(circle, var(--glow) 0%, transparent 70%);
+  pointer-events:none;z-index:0;
+  opacity:.6;
+  transition:background .4s ease;
+}
+
+/* ── PAGE ENTER ── */
 @keyframes fadeUp{
-  from{opacity:0;transform:translateY(14px)}
+  from{opacity:0;transform:translateY(20px)}
   to  {opacity:1;transform:translateY(0)}
 }
-.anim{opacity:0;animation:fadeUp .45s ease forwards}
-.anim-1{animation-delay:.05s}
-.anim-2{animation-delay:.12s}
-.anim-3{animation-delay:.19s}
-.anim-4{animation-delay:.26s}
-.anim-5{animation-delay:.33s}
-.anim-6{animation-delay:.40s}
+@keyframes slideIn{
+  from{opacity:0;transform:translateX(-16px)}
+  to  {opacity:1;transform:translateX(0)}
+}
+@keyframes scaleIn{
+  from{opacity:0;transform:scale(0.92)}
+  to  {opacity:1;transform:scale(1)}
+}
+@keyframes shimmer{
+  0%  {background-position:200% center}
+  100%{background-position:-200% center}
+}
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 0 20px var(--glow)}
+  50%    {box-shadow:0 0 40px var(--glow),0 0 60px var(--glow)}
+}
+
+.anim{opacity:0;animation:fadeUp .55s var(--ease-out) forwards}
+.anim-1{animation-delay:.06s}
+.anim-2{animation-delay:.14s}
+.anim-3{animation-delay:.22s}
+.anim-4{animation-delay:.30s}
+.anim-5{animation-delay:.38s}
+.anim-6{animation-delay:.46s}
 
 /* ── TOPBAR ── */
 .topbar{
-  height:50px;
-  padding:0 28px;
+  height:54px;
+  padding:0 32px;
   display:flex;align-items:center;justify-content:space-between;
   border-bottom:1px solid var(--border);
-  background:var(--paper);
-  position:sticky;top:0;z-index:100;
+  background:rgba(var(--paper-rgb,22,22,29),.85);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  position:sticky;top:0;z-index:200;
+  transition:background .4s,border-color .4s;
 }
-.brand{font-size:14px;font-weight:600;color:var(--ink);letter-spacing:-.2px;display:flex;align-items:center;gap:8px}
-.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--ink)}
-.topbar-right{font-size:11.5px;color:var(--dim);letter-spacing:.3px}
+.brand{
+  font-family:'Playfair Display',serif;
+  font-size:18px;font-weight:600;color:var(--text);
+  letter-spacing:-.3px;display:flex;align-items:center;gap:10px;
+}
+.brand-gem{
+  width:22px;height:22px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:5px;
+  transform:rotate(45deg) scale(.75);
+  box-shadow:0 0 12px var(--glow);
+  animation:pulse-glow 3s ease infinite;
+}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+
+/* Theme toggle */
+.theme-toggle{
+  width:52px;height:28px;border-radius:999px;
+  border:1px solid var(--border2);
+  background:var(--white);
+  cursor:pointer;position:relative;
+  transition:background .3s,border-color .3s;
+  display:flex;align-items:center;padding:3px;
+}
+.theme-toggle-thumb{
+  width:20px;height:20px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  transition:transform .35s var(--ease-spring);
+  display:flex;align-items:center;justify-content:center;font-size:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+[data-theme="light"] .theme-toggle-thumb{transform:translateX(24px)}
+.theme-label{font-size:11px;color:var(--muted);letter-spacing:.3px}
+
+/* History btn */
+.hist-btn{
+  height:32px;padding:0 14px;
+  border-radius:999px;border:1px solid var(--border);
+  background:var(--white);color:var(--muted);
+  font-family:'Space Grotesk',sans-serif;
+  font-size:12px;font-weight:500;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  transition:all .2s;
+}
+.hist-btn:hover{border-color:var(--accent);color:var(--accent)}
+.hist-count{
+  background:var(--accent);color:#fff;
+  width:18px;height:18px;border-radius:50%;
+  font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .3s var(--ease-spring);
+}
+.hist-btn:hover .hist-count{transform:scale(1.2)}
 
 /* ── WORKSPACE ── */
 .workspace{
   display:grid;
   grid-template-columns:var(--sidebar) 1fr;
-  min-height:calc(100dvh - 50px);
+  min-height:calc(100dvh - 54px);
+  position:relative;z-index:1;
 }
 
 /* ── LEFT PANEL ── */
@@ -83,82 +204,106 @@ body{
   background:var(--paper);
   padding:32px 28px;
   display:flex;flex-direction:column;gap:32px;
-  position:sticky;top:50px;
-  height:calc(100dvh - 50px);
+  position:sticky;top:54px;
+  height:calc(100dvh - 54px);
   overflow-y:auto;
+  transition:background .4s,border-color .4s;
 }
 
 /* ── CARD SCENE ── */
-.card-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.card-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
 .card-scene{
   width:var(--card-w);height:var(--card-h);
-  perspective:800px;cursor:pointer;flex-shrink:0;
+  perspective:900px;cursor:pointer;flex-shrink:0;
   will-change:transform;
+  filter:drop-shadow(0 20px 40px rgba(0,0,0,.4));
+  transition:filter .3s;
 }
+.card-scene:hover{filter:drop-shadow(0 30px 60px rgba(0,0,0,.5))}
 .card-flipper{
   width:100%;height:100%;
   position:relative;
   transform-style:preserve-3d;
-  transition:transform .7s cubic-bezier(.4,0,.2,1);
+  transition:transform .75s cubic-bezier(.4,0,.2,1);
 }
 .card-scene.flipped .card-flipper{transform:rotateY(180deg)}
 .card-face{
   position:absolute;inset:0;
-  border-radius:13px;
+  border-radius:14px;
   backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
   overflow:hidden;
 }
 .card-back-face{transform:rotateY(180deg)}
 
-/* Shadow ring animated on hover */
-.card-shadow{
-  position:absolute;inset:0;
-  border-radius:13px;
-  pointer-events:none;z-index:-1;
-  box-shadow:0 2px 8px rgba(0,0,0,.12);
-  transition:box-shadow .3s ease;
-}
-.card-scene:hover .card-shadow{
-  box-shadow:0 20px 50px rgba(0,0,0,.22),0 6px 16px rgba(0,0,0,.1);
-}
-
-/* Card front */
+/* Glassmorphism card front */
 #cardFront{
   padding:18px 22px;
   display:flex;flex-direction:column;justify-content:space-between;
   position:relative;background:#0d1b4b;
-  transition:background .3s ease;
-}
-.card-bg{position:absolute;inset:0;z-index:0;background:inherit;
   transition:background .35s ease;
 }
-/* Subtle top-left light sheen — makes card look physical, not flat */
-.card-bg::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.09) 0%,transparent 55%);
+
+/* Glass overlay for glassmorphism effect */
+.card-glass{
+  position:absolute;inset:0;z-index:1;
+  border-radius:14px;
+  background:linear-gradient(
+    135deg,
+    rgba(255,255,255,0.12) 0%,
+    rgba(255,255,255,0.04) 30%,
+    rgba(255,255,255,0) 60%,
+    rgba(0,0,0,0.08) 100%
+  );
   pointer-events:none;
 }
-/* Subtle geometric overlay */
-.card-bg::before{
-  content:'';position:absolute;
-  width:230px;height:230px;border-radius:50%;
-  top:-70px;right:-55px;
-  border:1px solid rgba(255,255,255,.06);
-  box-shadow:0 0 0 48px rgba(255,255,255,.02);
+
+/* Animated shimmer line on card */
+.card-shimmer{
+  position:absolute;
+  top:0;left:-100%;
+  width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+  pointer-events:none;z-index:2;
+  animation:card-shimmer-move 4s ease infinite;
 }
-.card-bg::after{
-  content:'';position:absolute;
-  width:120px;height:120px;border-radius:50%;
-  bottom:-30px;left:20px;
-  border:1px solid rgba(255,255,255,.04);
+@keyframes card-shimmer-move{
+  0%{left:-60%}
+  50%,100%{left:160%}
 }
 
-.card-top,.card-mid,.card-btm{position:relative;z-index:1}
+/* Geometric orbs */
+.card-bg{position:absolute;inset:0;z-index:0;background:inherit;transition:background .35s ease}
+.card-orb1{
+  position:absolute;width:200px;height:200px;border-radius:50%;
+  top:-60px;right:-60px;z-index:0;
+  background:radial-gradient(circle,rgba(255,255,255,.07) 0%,transparent 70%);
+  pointer-events:none;
+}
+.card-orb2{
+  position:absolute;width:120px;height:120px;border-radius:50%;
+  bottom:-30px;left:10px;z-index:0;
+  background:radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+/* Ring decorations */
+.card-ring{
+  position:absolute;border-radius:50%;pointer-events:none;z-index:0;
+  border:1px solid rgba(255,255,255,.06);
+}
+.card-ring1{width:180px;height:180px;top:-70px;right:-50px}
+.card-ring2{width:90px;height:90px;bottom:-25px;left:15px}
+
+.card-top,.card-mid,.card-btm{position:relative;z-index:3}
 .card-top{display:flex;align-items:flex-start;justify-content:space-between}
 .card-logo-wrap{height:26px;max-width:90px;display:flex;align-items:center}
 .card-logo-wrap img{max-height:26px;max-width:90px;object-fit:contain;filter:brightness(0) invert(1);display:none}
-.bank-name{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.82)}
+.bank-name{
+  font-family:'Playfair Display',serif;
+  font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,.85);
+}
 .net-badge{display:flex;align-items:center}
 .mc-l{width:22px;height:22px;border-radius:50%;background:#eb001b;margin-right:-7px;opacity:.92}
 .mc-r{width:22px;height:22px;border-radius:50%;background:#f79e1b;opacity:.92}
@@ -167,7 +312,7 @@ body{
   width:36px;height:27px;border-radius:4px;
   background:linear-gradient(135deg,#b0b0b0,#dedede 40%,#999 70%,#ccc);
   position:relative;overflow:hidden;
-  box-shadow:0 1px 5px rgba(0,0,0,.35);
+  box-shadow:0 2px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.3);
 }
 .chip::before{
   content:'';position:absolute;inset:0;
@@ -183,13 +328,18 @@ body{
 
 .card-number{
   font-family:'DM Mono',monospace;
-  font-size:13.5px;letter-spacing:2px;
-  color:rgba(255,255,255,.88);
+  font-size:13.5px;letter-spacing:2.5px;
+  color:rgba(255,255,255,.9);
   display:flex;gap:9px;
+  text-shadow:0 1px 4px rgba(0,0,0,.3);
 }
 .card-btm{display:flex;justify-content:space-between;align-items:flex-end}
-.c-lbl{font-size:7px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.32);margin-bottom:2px}
-.c-val{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.9);max-width:155px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-lbl{font-size:7px;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:2px;font-family:'Space Grotesk',sans-serif}
+.c-val{
+  font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:rgba(255,255,255,.92);max-width:155px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-family:'Space Grotesk',sans-serif;
+}
 .c-exp{text-align:right}
 .c-exp .c-val{font-family:'DM Mono',monospace;font-weight:400;font-size:11px;letter-spacing:1.5px}
 
@@ -197,47 +347,66 @@ body{
 .card-status{
   position:absolute;top:9px;right:9px;z-index:5;
   font-size:8px;font-weight:700;letter-spacing:.8px;
-  padding:2px 7px;border-radius:999px;
+  padding:2px 8px;border-radius:999px;
   display:none;text-transform:uppercase;
+  backdrop-filter:blur(4px);
+  font-family:'Space Grotesk',sans-serif;
 }
-.card-status.show{display:block}
-.card-status.approved{background:#15803d;color:#fff}
-.card-status.declined{background:#b91c1c;color:#fff}
-.card-status.expired {background:#b45309;color:#fff}
-.card-status.funds   {background:#6d28d9;color:#fff}
+.card-status.show{display:block;animation:scaleIn .3s var(--ease-spring)}
+.card-status.approved{background:rgba(52,211,153,.25);color:#34d399;border:1px solid rgba(52,211,153,.3)}
+.card-status.declined{background:rgba(248,113,113,.2);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+.card-status.expired {background:rgba(251,191,36,.2);color:#fbbf24;border:1px solid rgba(251,191,36,.3)}
+.card-status.funds   {background:rgba(167,139,250,.2);color:#a78bfa;border:1px solid rgba(167,139,250,.3)}
 
 /* Card back */
 .card-back-inner{
   width:100%;height:100%;display:flex;flex-direction:column;
   background:#1a1f36;transition:background .35s ease;
 }
-.magstripe{width:100%;height:38px;background:#0d0d0d;margin-top:22px}
+.magstripe{width:100%;height:38px;background:linear-gradient(90deg,#0a0a0a,#1a1a1a);margin-top:22px}
 .sig-row{margin:10px 18px 0;display:flex;align-items:center;gap:8px}
-.sig-strip{flex:1;height:26px;border-radius:2px;background:repeating-linear-gradient(-45deg,#fff 0,#fff 3px,#eee 3px,#eee 6px)}
-.cvv-box{background:#fff;color:#111;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;padding:4px 8px;border-radius:3px;letter-spacing:2px;min-width:40px;text-align:center;cursor:pointer}
-.card-back-txt{font-size:7.5px;color:rgba(255,255,255,.22);padding:7px 18px;line-height:1.5}
+.sig-strip{
+  flex:1;height:26px;border-radius:2px;
+  background:repeating-linear-gradient(-45deg,#fff 0,#fff 3px,#eee 3px,#eee 6px);
+  opacity:.9;
+}
+.cvv-box{
+  background:rgba(255,255,255,.95);color:#111;
+  font-family:'DM Mono',monospace;font-size:11px;font-weight:600;
+  padding:4px 8px;border-radius:3px;letter-spacing:2px;
+  min-width:40px;text-align:center;cursor:pointer;
+}
+.card-back-txt{font-size:7.5px;color:rgba(255,255,255,.2);padding:7px 18px;line-height:1.6;font-family:'Space Grotesk',sans-serif}
 
 .flip-hint{
-  font-size:11px;color:var(--dim);
+  font-size:11px;color:var(--muted);
   display:flex;align-items:center;gap:5px;cursor:pointer;
-  transition:color .15s;user-select:none;
-  letter-spacing:.1px;
+  transition:color .15s,transform .2s;user-select:none;
+  letter-spacing:.3px;font-family:'Space Grotesk',sans-serif;
 }
-.flip-hint:hover{color:var(--muted)}
+.flip-hint:hover{color:var(--accent);transform:translateY(-1px)}
 .flip-hint svg{width:11px;height:11px}
 
 /* ── AWARDS ── */
 .awards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .award{
   background:var(--white);border:1px solid var(--border);
-  border-radius:8px;padding:11px 13px;
+  border-radius:10px;padding:12px 13px;
   display:flex;align-items:center;gap:10px;
-  transition:border-color .15s;
+  transition:border-color .2s,transform .2s,background .4s;
+  cursor:default;
 }
-.award:hover{border-color:var(--border2)}
+.award:hover{border-color:var(--accent);transform:translateY(-2px)}
 .award-icon{font-size:16px;flex-shrink:0}
-.award-val{font-size:15px;font-weight:700;color:var(--ink);line-height:1;margin-bottom:1px}
-.award-lbl{font-size:9.5px;color:var(--muted);letter-spacing:.3px}
+.award-val{
+  font-size:16px;font-weight:700;color:var(--text);
+  line-height:1;margin-bottom:1px;
+  font-family:'Playfair Display',serif;
+  background:linear-gradient(135deg,var(--text),var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  transition:color .4s;
+}
+.award-lbl{font-size:9.5px;color:var(--muted);letter-spacing:.3px;font-family:'Space Grotesk',sans-serif}
 
 /* ── RIGHT PANEL ── */
 .right-panel{
@@ -245,46 +414,55 @@ body{
   padding:32px 36px;
   display:flex;flex-direction:column;gap:32px;
   overflow-y:auto;
+  transition:background .4s;
 }
 
 /* Section headers */
 .sec-hd{
-  font-size:10.5px;font-weight:600;letter-spacing:.8px;
+  font-size:10px;font-weight:600;letter-spacing:1px;
   text-transform:uppercase;color:var(--muted);
-  margin-bottom:14px;
-  display:flex;align-items:center;gap:8px;
+  margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+  font-family:'Space Grotesk',sans-serif;
 }
-.sec-hd::after{content:'';flex:1;height:1px;background:var(--border)}
+.sec-hd::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
 
 /* Form */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .fg{display:flex;flex-direction:column;gap:5px}
 .fg.full{grid-column:1/-1}
-label{font-size:11px;font-weight:500;color:var(--muted)}
+label{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.2px;font-family:'Space Grotesk',sans-serif}
 input[type=text]{
   background:var(--white);
   border:1px solid var(--border);
   border-radius:var(--r-sm);
-  color:var(--ink);
-  font-family:'Inter',sans-serif;font-size:13.5px;
-  padding:0 12px;height:40px;outline:none;width:100%;
-  transition:border-color .15s;
+  color:var(--text);
+  font-family:'Space Grotesk',sans-serif;font-size:13.5px;
+  padding:0 13px;height:42px;outline:none;width:100%;
+  transition:border-color .2s,box-shadow .2s,background .4s,color .4s;
 }
-input[type=text]:focus{border-color:var(--border2)}
+input[type=text]:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--glow);
+}
 input::placeholder{color:var(--dim)}
 
 /* Network chips */
 .net-chips{display:flex;gap:6px;flex-wrap:wrap}
 .net-chip{
-  height:34px;padding:0 14px;
+  height:36px;padding:0 16px;
   background:var(--white);border:1px solid var(--border);
   border-radius:999px;color:var(--muted);
   font-size:12.5px;font-weight:500;cursor:pointer;
-  transition:all .15s;display:flex;align-items:center;gap:6px;
-  user-select:none;
+  transition:all .2s;display:flex;align-items:center;gap:7px;
+  user-select:none;font-family:'Space Grotesk',sans-serif;
 }
-.net-chip:hover{border-color:var(--border2);color:var(--ink)}
-.net-chip.active{background:var(--ink);border-color:var(--ink);color:#fff}
+.net-chip:hover{border-color:var(--border2);color:var(--text)}
+.net-chip.active{
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  border-color:transparent;color:#fff;
+  box-shadow:0 4px 16px var(--glow);
+}
 .chip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
 /* Number row */
@@ -292,38 +470,44 @@ input::placeholder{color:var(--dim)}
 .number-display{
   flex:1;
   font-family:'DM Mono',monospace;font-size:13px;letter-spacing:2px;
-  color:var(--ink);background:var(--white);
+  color:var(--text);background:var(--white);
   border:1px solid var(--border);border-radius:var(--r-sm);
-  padding:0 12px;height:40px;
+  padding:0 13px;height:42px;
   display:flex;align-items:center;justify-content:space-between;gap:8px;
+  transition:border-color .2s,background .4s;
 }
 .num-txt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .icon-btn{
   background:none;border:none;color:var(--dim);cursor:pointer;
-  padding:3px;border-radius:4px;flex-shrink:0;
-  display:flex;align-items:center;transition:color .15s;
+  padding:4px;border-radius:4px;flex-shrink:0;
+  display:flex;align-items:center;transition:color .15s,transform .2s;
 }
-.icon-btn:hover{color:var(--muted)}
+.icon-btn:hover{color:var(--accent);transform:scale(1.15)}
 .icon-btn svg{width:13px;height:13px}
 .sq-btn{
-  height:40px;width:40px;flex-shrink:0;
+  height:42px;width:42px;flex-shrink:0;
   background:var(--white);border:1px solid var(--border);
   border-radius:var(--r-sm);color:var(--muted);
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .15s;
+  cursor:pointer;transition:all .2s;
 }
-.sq-btn:hover{border-color:var(--border2);color:var(--ink)}
+.sq-btn:hover{
+  border-color:var(--accent);color:var(--accent);
+  box-shadow:0 0 12px var(--glow);
+  transform:rotate(180deg);
+}
 .sq-btn svg{width:15px;height:15px}
 
 /* Color swatches */
 .color-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 .swatch{
-  width:26px;height:26px;border-radius:5px;
+  width:28px;height:28px;border-radius:6px;
   cursor:pointer;border:2px solid transparent;
-  transition:transform .12s,border-color .12s;flex-shrink:0;
+  transition:transform .2s var(--ease-spring),border-color .2s,box-shadow .2s;
+  flex-shrink:0;
 }
-.swatch:hover{transform:scale(1.15)}
-.swatch.active{border-color:var(--ink)}
+.swatch:hover{transform:scale(1.2) translateY(-2px)}
+.swatch.active{border-color:var(--text);box-shadow:0 4px 12px rgba(0,0,0,.3)}
 .swatch-custom{
   position:relative;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
@@ -339,110 +523,215 @@ input::placeholder{color:var(--dim)}
 .file-drop{
   position:relative;background:var(--white);
   border:1px dashed var(--border2);border-radius:var(--r-sm);
-  padding:14px;text-align:center;cursor:pointer;
-  transition:border-color .15s,background .15s;
+  padding:16px;text-align:center;cursor:pointer;
+  transition:border-color .2s,background .2s,box-shadow .2s;
 }
-.file-drop:hover{border-color:var(--muted);background:var(--paper)}
+.file-drop:hover{
+  border-color:var(--accent);background:var(--paper);
+  box-shadow:0 0 16px var(--glow);
+}
 .file-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;padding:0;border:none}
-.file-drop-txt{font-size:12.5px;color:var(--muted)}
-.file-drop-txt strong{color:var(--ink);font-weight:500}
+.file-drop-txt{font-size:12.5px;color:var(--muted);font-family:'Space Grotesk',sans-serif}
+.file-drop-txt strong{color:var(--text);font-weight:500}
 .file-ok{font-size:11px;color:var(--green);margin-top:3px}
 
 /* Scenarios */
 .sc-chips{display:flex;gap:6px;flex-wrap:wrap}
 .sc-chip{
-  height:30px;padding:0 12px;
+  height:32px;padding:0 14px;
   background:var(--white);border:1px solid var(--border);
   border-radius:999px;color:var(--muted);
   font-size:12px;font-weight:500;cursor:pointer;
   transition:all .2s;display:flex;align-items:center;gap:5px;
-  user-select:none;
+  user-select:none;font-family:'Space Grotesk',sans-serif;
 }
-.sc-chip:hover{border-color:var(--border2);color:var(--ink)}
-.sc-chip.ok   {background:#15803d;border-color:#15803d;color:#fff}
-.sc-chip.fail {background:#b91c1c;border-color:#b91c1c;color:#fff}
-.sc-chip.exp  {background:#b45309;border-color:#b45309;color:#fff}
-.sc-chip.funds{background:#6d28d9;border-color:#6d28d9;color:#fff}
+.sc-chip:hover{border-color:var(--border2);color:var(--text);transform:translateY(-1px)}
+.sc-chip.ok   {background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.4);color:var(--green)}
+.sc-chip.fail {background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.4);color:var(--red)}
+.sc-chip.exp  {background:rgba(251,191,36,.15);border-color:rgba(251,191,36,.4);color:var(--amber)}
+.sc-chip.funds{background:rgba(167,139,250,.15);border-color:rgba(167,139,250,.4);color:var(--purple)}
 
 /* Test cards table */
 .test-table{width:100%;border-collapse:collapse}
 .test-table th{
   font-size:10px;font-weight:600;letter-spacing:.5px;
   text-transform:uppercase;color:var(--dim);
-  text-align:left;padding:0 10px 9px;
+  text-align:left;padding:0 10px 10px;
+  font-family:'Space Grotesk',sans-serif;
 }
 .test-table td{
-  font-size:12.5px;padding:9px 10px;
+  font-size:12.5px;padding:10px 10px;
   border-top:1px solid var(--border);color:var(--muted);
-  vertical-align:middle;
+  vertical-align:middle;transition:background .15s;
 }
-.test-table tr{transition:background .12s}
-.test-table tbody tr:hover td{background:var(--white);color:var(--ink)}
-.mono{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink)}
+.test-table tbody tr:hover td{background:var(--white);color:var(--text)}
+.mono{font-family:'DM Mono',monospace;font-size:12px;color:var(--text)}
 .copy-row{display:flex;align-items:center;gap:6px;cursor:pointer;transition:color .12s}
 .copy-row svg{width:11px;height:11px;opacity:.4;flex-shrink:0}
-.copy-row:hover svg{opacity:.8}
+.copy-row:hover svg{opacity:.9;color:var(--accent)}
 .net-pill{
   font-size:10px;font-weight:600;letter-spacing:.3px;
   padding:2px 8px;border-radius:999px;white-space:nowrap;
+  font-family:'Space Grotesk',sans-serif;
 }
-.pv{background:#dbeafe;color:#1e40af}
-.pm{background:#fce7e7;color:#991b1b}
-.pa{background:#d1fae5;color:#065f46}
-.pd{background:#fef3c7;color:#92400e}
+.pv{background:rgba(30,64,175,.15);color:#60a5fa}
+.pm{background:rgba(185,28,28,.15);color:#f87171}
+.pa{background:rgba(5,150,105,.15);color:#34d399}
+.pd{background:rgba(180,83,9,.15);color:#fbbf24}
 
 /* Buttons */
 .action-row{display:flex;gap:8px;flex-wrap:wrap}
 .btn{
-  height:38px;padding:0 18px;
+  height:40px;padding:0 20px;
   border-radius:var(--r-sm);
-  font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
+  font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:500;
   cursor:pointer;
   display:inline-flex;align-items:center;gap:7px;
   white-space:nowrap;border:1px solid transparent;
-  transition:background .15s,border-color .15s,color .15s,transform .1s;
-  user-select:none;
+  transition:all .2s;
+  user-select:none;letter-spacing:.1px;
 }
-.btn:active{transform:scale(.98)}
-.btn-primary{background:var(--ink);border-color:var(--ink);color:#fff}
-.btn-primary:hover{background:#333}
-.btn-primary:disabled{opacity:.35;cursor:not-allowed;transform:none}
-.btn-outline{background:transparent;border-color:var(--border2);color:var(--ink)}
-.btn-outline:hover{border-color:var(--muted);background:var(--white)}
+.btn:active{transform:scale(.97)}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  border-color:transparent;color:#fff;
+  box-shadow:0 4px 16px var(--glow);
+}
+.btn-primary:hover{
+  box-shadow:0 6px 24px var(--glow);
+  transform:translateY(-1px);
+}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-outline{
+  background:var(--white);border-color:var(--border);color:var(--text);
+}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 0 12px var(--glow)}
 .btn-ghost{background:transparent;border-color:transparent;color:var(--muted);padding:0 10px}
-.btn-ghost:hover{color:var(--ink)}
+.btn-ghost:hover{color:var(--text)}
 .btn svg{width:14px;height:14px;flex-shrink:0}
+
+/* ── HISTORY DRAWER ── */
+.hist-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease;
+}
+.hist-overlay.open{opacity:1;pointer-events:all}
+.hist-drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:400;
+  width:360px;max-width:100vw;
+  background:var(--paper);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform .45s var(--ease-out),background .4s,border-color .4s;
+  box-shadow:-20px 0 60px rgba(0,0,0,.3);
+}
+.hist-drawer.open{transform:translateX(0)}
+.hist-hd{
+  padding:20px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.hist-title{
+  font-family:'Playfair Display',serif;
+  font-size:16px;font-weight:600;color:var(--text);
+}
+.hist-close{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--white);border:1px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:16px;
+  transition:all .2s;
+}
+.hist-close:hover{border-color:var(--accent);color:var(--accent);transform:rotate(90deg)}
+.hist-body{flex:1;overflow-y:auto;padding:16px}
+.hist-empty{
+  text-align:center;padding:40px 20px;
+  color:var(--dim);font-size:13px;
+  font-family:'Space Grotesk',sans-serif;
+}
+.hist-empty-icon{font-size:36px;margin-bottom:10px}
+.hist-item{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:10px;margin-bottom:10px;overflow:hidden;
+  transition:border-color .2s,transform .2s;
+  animation:slideIn .35s var(--ease-out);
+}
+.hist-item:hover{border-color:var(--border2);transform:translateX(-2px)}
+.hist-card-mini{
+  height:80px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:10px 14px;position:relative;overflow:hidden;
+}
+.hist-card-mini::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.08) 0%,transparent 60%);
+  pointer-events:none;
+}
+.hist-num{
+  font-family:'DM Mono',monospace;font-size:10px;
+  color:rgba(255,255,255,.7);letter-spacing:1.5px;
+}
+.hist-name{
+  font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
+  color:rgba(255,255,255,.85);font-family:'Space Grotesk',sans-serif;
+}
+.hist-meta{
+  padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.hist-time{font-size:10.5px;color:var(--dim);font-family:'Space Grotesk',sans-serif}
+.hist-net-badge{
+  font-size:9px;font-weight:600;letter-spacing:.3px;
+  padding:2px 7px;border-radius:999px;
+  font-family:'Space Grotesk',sans-serif;
+}
+.hist-body::-webkit-scrollbar{width:4px}
+.hist-body::-webkit-scrollbar-track{background:transparent}
+.hist-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
 /* Download overlay */
 .dl-overlay{
   display:none;position:fixed;inset:0;z-index:9998;
-  background:rgba(240,237,232,.7);backdrop-filter:blur(4px);
-  align-items:center;justify-content:center;flex-direction:column;gap:12px;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;flex-direction:column;gap:14px;
 }
 .dl-overlay.show{display:flex}
 .dl-spin{
-  width:34px;height:34px;border-radius:50%;
-  border:2px solid var(--border);border-top-color:var(--ink);
+  width:38px;height:38px;border-radius:50%;
+  border:2px solid var(--border);border-top-color:var(--accent);
   animation:spin .65s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-.dl-txt{font-size:12.5px;color:var(--muted)}
+.dl-txt{font-size:13px;color:var(--muted);font-family:'Space Grotesk',sans-serif}
 
 /* Toast */
 #toast{
-  position:fixed;bottom:20px;left:50%;
-  transform:translateX(-50%) translateY(55px);
-  background:var(--ink);border-radius:6px;
-  padding:9px 16px;font-size:12.5px;font-weight:500;color:#fff;
-  box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:9999;
-  transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s;
-  display:flex;align-items:center;gap:8px;
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:var(--paper);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 18px;font-size:12.5px;font-weight:500;color:var(--text);
+  box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:9999;
+  transition:transform .3s var(--ease-spring),opacity .2s;
+  display:flex;align-items:center;gap:9px;
   pointer-events:none;opacity:0;
+  font-family:'Space Grotesk',sans-serif;
+  backdrop-filter:blur(12px);
 }
 #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-.t-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.ok   .t-dot{background:#4ade80}
-.err  .t-dot{background:#f87171}
+.t-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ok  .t-dot{background:var(--green)}
+.err .t-dot{background:var(--red)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
 /* ── RESPONSIVE ── */
 @media(max-width:860px){
@@ -450,15 +739,12 @@ input::placeholder{color:var(--dim)}
   .right-panel{padding:24px 20px}
 }
 @media(max-width:680px){
-  .workspace{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-  .left-panel{
-    position:static;height:auto;
-    border-right:none;border-bottom:1px solid var(--border);
-    padding:20px 16px;
-  }
+  .workspace{grid-template-columns:1fr}
+  .left-panel{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border);padding:20px 16px}
   .right-panel{padding:20px 16px}
   :root{--card-w:min(300px,calc(100vw - 96px))}
   .awards{grid-template-columns:repeat(4,1fr)}
+  .hist-drawer{width:100vw}
 }
 @media(max-width:520px){
   :root{--card-w:calc(100vw - 52px);--card-h:calc(var(--card-w)*.6307)}
@@ -478,13 +764,40 @@ input::placeholder{color:var(--dim)}
   <div class="dl-txt">Generando imagen…</div>
 </div>
 
+<!-- HISTORY DRAWER -->
+<div class="hist-overlay" id="histOverlay" onclick="closeHistory()"></div>
+<div class="hist-drawer" id="histDrawer">
+  <div class="hist-hd">
+    <div class="hist-title">Historial</div>
+    <div class="hist-close" onclick="closeHistory()">×</div>
+  </div>
+  <div class="hist-body" id="histBody">
+    <div class="hist-empty">
+      <div class="hist-empty-icon">🃏</div>
+      <div>Aún no has creado tarjetas.<br>¡Empieza a forjar!</div>
+    </div>
+  </div>
+</div>
+
 <!-- TOPBAR -->
 <header class="topbar anim anim-1">
   <div class="brand">
-    <div class="brand-dot"></div>
+    <div class="brand-gem"></div>
     CardForge
   </div>
-  <div class="topbar-right">Generador de tarjetas</div>
+  <div class="topbar-actions">
+    <div class="hist-btn" onclick="openHistory()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Historial
+      <div class="hist-count" id="histCount">0</div>
+    </div>
+    <span class="theme-label" id="themeLabel">Dark</span>
+    <div class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+      <div class="theme-toggle-thumb" id="themeThumb">
+        <span id="themeIcon">🌙</span>
+      </div>
+    </div>
+  </div>
 </header>
 
 <div class="workspace">
@@ -493,13 +806,18 @@ input::placeholder{color:var(--dim)}
   <aside class="left-panel">
 
     <div class="card-wrap anim anim-2">
-      <div class="card-shadow" id="cardShadow"></div>
       <div class="card-scene" id="cardScene" onclick="flipCard()">
         <div class="card-flipper" id="cardFlipper">
 
           <!-- FRONT -->
           <div class="card-face" id="cardFront">
             <div class="card-bg" id="cardBg"></div>
+            <div class="card-orb1"></div>
+            <div class="card-orb2"></div>
+            <div class="card-ring card-ring1"></div>
+            <div class="card-ring card-ring2"></div>
+            <div class="card-glass"></div>
+            <div class="card-shimmer"></div>
             <div class="card-status" id="cardStatus"></div>
             <div class="card-top">
               <div class="card-logo-wrap">
@@ -577,7 +895,6 @@ input::placeholder{color:var(--dim)}
     <section class="anim anim-3">
       <div class="sec-hd">Datos de la tarjeta</div>
       <div class="form-grid">
-
         <div class="fg">
           <label>Nombre del titular</label>
           <input type="text" id="iName" placeholder="Juan García" maxlength="26" autocomplete="off">
@@ -625,7 +942,6 @@ input::placeholder{color:var(--dim)}
             </button>
           </div>
         </div>
-
       </div>
     </section>
 
@@ -636,25 +952,15 @@ input::placeholder{color:var(--dim)}
         <div class="fg full">
           <label>Color de tarjeta</label>
           <div class="color-row">
-            <!-- Azul noche -->
             <div class="swatch active" style="background:#0d1b4b" data-c="#0d1b4b" onclick="pickColor(this)" title="Azul noche"></div>
-            <!-- Negro mate -->
             <div class="swatch" style="background:#111111" data-c="#111111" onclick="pickColor(this)" title="Negro mate"></div>
-            <!-- Verde bosque -->
             <div class="swatch" style="background:#0a3d2b" data-c="#0a3d2b" onclick="pickColor(this)" title="Verde bosque"></div>
-            <!-- Borgoña -->
             <div class="swatch" style="background:#5c0a20" data-c="#5c0a20" onclick="pickColor(this)" title="Borgoña"></div>
-            <!-- Azul real -->
             <div class="swatch" style="background:#1a3a9c" data-c="#1a3a9c" onclick="pickColor(this)" title="Azul real"></div>
-            <!-- Pizarra -->
             <div class="swatch" style="background:#2d3748" data-c="#2d3748" onclick="pickColor(this)" title="Pizarra"></div>
-            <!-- Teal oscuro -->
             <div class="swatch" style="background:#0d3d40" data-c="#0d3d40" onclick="pickColor(this)" title="Teal"></div>
-            <!-- Morado oscuro -->
             <div class="swatch" style="background:#2e1065" data-c="#2e1065" onclick="pickColor(this)" title="Púrpura"></div>
-            <!-- Cobre oscuro -->
             <div class="swatch" style="background:#431407" data-c="#431407" onclick="pickColor(this)" title="Cobre"></div>
-            <!-- Gris acero -->
             <div class="swatch" style="background:#374151" data-c="#374151" onclick="pickColor(this)" title="Acero"></div>
             <div class="swatch swatch-custom" title="Color personalizado">
               🎨<input type="color" id="colorPicker" value="#0d1b4b" oninput="pickCustomColor(this.value)">
@@ -677,10 +983,10 @@ input::placeholder{color:var(--dim)}
       <div class="sec-hd">Escenarios de prueba</div>
       <div class="sc-chips">
         <div class="sc-chip" data-sc="approved" onclick="setScenario(this)">✓ Aprobada</div>
-        <div class="sc-chip" data-sc="declined" onclick="setScenario(this)">✗ Rechazada</div>
-        <div class="sc-chip" data-sc="expired"  onclick="setScenario(this)">⏱ Vencida</div>
-        <div class="sc-chip" data-sc="funds"    onclick="setScenario(this)">⚠ Sin fondos</div>
-        <div class="sc-chip" data-sc="none"     onclick="setScenario(this)">— Sin estado</div>
+        <div class="sc-chip" data-sc="declined"  onclick="setScenario(this)">✗ Rechazada</div>
+        <div class="sc-chip" data-sc="expired"   onclick="setScenario(this)">⏱ Vencida</div>
+        <div class="sc-chip" data-sc="funds"     onclick="setScenario(this)">⚠ Sin fondos</div>
+        <div class="sc-chip" data-sc="none"      onclick="setScenario(this)">— Sin estado</div>
       </div>
     </section>
 
@@ -689,9 +995,7 @@ input::placeholder{color:var(--dim)}
       <div class="sec-hd">Números de prueba</div>
       <table class="test-table">
         <thead>
-          <tr>
-            <th>Red</th><th>Número</th><th>CVV</th><th>Vence</th>
-          </tr>
+          <tr><th>Red</th><th>Número</th><th>CVV</th><th>Vence</th></tr>
         </thead>
         <tbody id="testTBody"></tbody>
       </table>
@@ -727,17 +1031,17 @@ input::placeholder{color:var(--dim)}
 
 <script>
 /* ── TEST CARDS DATA ── */
-const CARDS = [
-  {cls:'pv',lbl:'Visa',        num:'4111 1111 1111 1111',cvv:'737', exp:'12/27'},
-  {cls:'pv',lbl:'Visa',        num:'4012 8888 8888 1881',cvv:'123', exp:'11/26'},
-  {cls:'pm',lbl:'Mastercard',  num:'5500 0000 0000 0004',cvv:'321', exp:'10/28'},
-  {cls:'pm',lbl:'Mastercard',  num:'5105 1051 0510 5100',cvv:'554', exp:'09/27'},
-  {cls:'pa',lbl:'Amex',        num:'3714 496353 98431',  cvv:'2505',exp:'08/26'},
-  {cls:'pa',lbl:'Amex',        num:'3782 822463 10005',  cvv:'1234',exp:'07/27'},
-  {cls:'pd',lbl:'Diners',      num:'3646 1510 0000 39',  cvv:'456', exp:'06/28'},
+const CARDS=[
+  {cls:'pv',lbl:'Visa',       num:'4111 1111 1111 1111',cvv:'737', exp:'12/27'},
+  {cls:'pv',lbl:'Visa',       num:'4012 8888 8888 1881',cvv:'123', exp:'11/26'},
+  {cls:'pm',lbl:'Mastercard', num:'5500 0000 0000 0004',cvv:'321', exp:'10/28'},
+  {cls:'pm',lbl:'Mastercard', num:'5105 1051 0510 5100',cvv:'554', exp:'09/27'},
+  {cls:'pa',lbl:'Amex',       num:'3714 496353 98431',  cvv:'2505',exp:'08/26'},
+  {cls:'pa',lbl:'Amex',       num:'3782 822463 10005',  cvv:'1234',exp:'07/27'},
+  {cls:'pd',lbl:'Diners',     num:'3646 1510 0000 39',  cvv:'456', exp:'06/28'},
 ];
 function buildTable(){
-  document.getElementById('testTBody').innerHTML = CARDS.map(c=>`
+  document.getElementById('testTBody').innerHTML=CARDS.map(c=>`
     <tr>
       <td><span class="net-pill ${c.cls}">${c.lbl}</span></td>
       <td><div class="copy-row mono" onclick="copyText('${c.num.replace(/\s/g,'')}')" title="Copiar">
@@ -752,46 +1056,92 @@ buildTable();
 
 /* ── STATE ── */
 let state={color:'#0d1b4b',network:'mastercard',scenario:'none',count:0,downloads:0,rawNumber:''};
+let history=[];
 
-/* ── INIT ── */
-generateNumber(); generateCVV(); applyCard(false);
+/* ── THEME ── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme', isDark?'light':'dark');
+  document.getElementById('themeLabel').textContent=isDark?'Light':'Dark';
+  document.getElementById('themeIcon').textContent=isDark?'☀️':'🌙';
+}
+
+/* ── HISTORY ── */
+function openHistory(){
+  document.getElementById('histOverlay').classList.add('open');
+  document.getElementById('histDrawer').classList.add('open');
+}
+function closeHistory(){
+  document.getElementById('histOverlay').classList.remove('open');
+  document.getElementById('histDrawer').classList.remove('open');
+}
+function saveToHistory(){
+  const name=document.getElementById('iName').value.trim()||'Sin nombre';
+  const num=state.rawNumber||'•••• •••• •••• ••••';
+  const net=state.network;
+  const color=state.color;
+  const exp=document.getElementById('iExpiry').value||'—';
+  const now=new Date();
+  const time=now.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+  history.unshift({name,num,net,color,exp,time});
+  updateHistoryUI();
+}
+function updateHistoryUI(){
+  const count=history.length;
+  document.getElementById('histCount').textContent=count;
+  const body=document.getElementById('histBody');
+  if(count===0){
+    body.innerHTML=`<div class="hist-empty"><div class="hist-empty-icon">🃏</div><div>Aún no has creado tarjetas.<br>¡Empieza a forjar!</div></div>`;
+    return;
+  }
+  const netLabels={mastercard:'MC',visa:'Visa',amex:'Amex',none:'—'};
+  const netColors={mastercard:{bg:'rgba(248,113,113,.15)',c:'#f87171'},visa:{bg:'rgba(96,165,250,.15)',c:'#60a5fa'},amex:{bg:'rgba(52,211,153,.15)',c:'#34d399'},none:{bg:'rgba(100,100,100,.15)',c:'#999'}};
+  body.innerHTML=history.map((h,i)=>{
+    const nc=netColors[h.net]||netColors.none;
+    return `<div class="hist-item" style="animation-delay:${i*0.04}s">
+      <div class="hist-card-mini" style="background:${h.color}">
+        <div class="hist-num">${h.num.slice(0,4)} •••• •••• ${h.num.slice(-4)}</div>
+        <div class="hist-name">${h.name}</div>
+      </div>
+      <div class="hist-meta">
+        <span class="hist-time">${h.time} · ${h.exp}</span>
+        <span class="hist-net-badge" style="background:${nc.bg};color:${nc.c}">${netLabels[h.net]||'—'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 /* ── 3D TILT ── */
-const scene = document.getElementById('cardScene');
-const flipper = document.getElementById('cardFlipper');
-let tiltActive = false;
-
-scene.addEventListener('mousemove', e=>{
-  if(scene.classList.contains('flipped')) return;
-  const r = scene.getBoundingClientRect();
-  const x = (e.clientX - r.left) / r.width  - 0.5;   // -0.5 → 0.5
-  const y = (e.clientY - r.top)  / r.height - 0.5;
-  const rotX = -y * 14;
-  const rotY =  x * 14;
-  flipper.style.transition = 'none';
-  flipper.style.transform  = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-  tiltActive = true;
+const scene=document.getElementById('cardScene');
+const flipper=document.getElementById('cardFlipper');
+let tiltActive=false;
+scene.addEventListener('mousemove',e=>{
+  if(scene.classList.contains('flipped'))return;
+  const r=scene.getBoundingClientRect();
+  const x=(e.clientX-r.left)/r.width-.5;
+  const y=(e.clientY-r.top)/r.height-.5;
+  flipper.style.transition='none';
+  flipper.style.transform=`rotateX(${-y*16}deg) rotateY(${x*16}deg)`;
+  tiltActive=true;
 });
-scene.addEventListener('mouseleave', ()=>{
-  if(!tiltActive) return;
-  flipper.style.transition = 'transform .5s ease';
-  flipper.style.transform  = scene.classList.contains('flipped')
-    ? 'rotateY(180deg)' : 'rotateX(0) rotateY(0)';
-  tiltActive = false;
+scene.addEventListener('mouseleave',()=>{
+  if(!tiltActive)return;
+  flipper.style.transition='transform .6s ease';
+  flipper.style.transform=scene.classList.contains('flipped')?'rotateY(180deg)':'rotateX(0) rotateY(0)';
+  tiltActive=false;
 });
 
 /* ── LIVE INPUTS ── */
-document.getElementById('iName').addEventListener('input', e=>
-  document.getElementById('cardHolder').textContent =
-    e.target.value.trim().toUpperCase()||'NOMBRE APELLIDO');
-document.getElementById('iBank').addEventListener('input', e=>{
+document.getElementById('iName').addEventListener('input',e=>
+  document.getElementById('cardHolder').textContent=e.target.value.trim().toUpperCase()||'NOMBRE APELLIDO');
+document.getElementById('iBank').addEventListener('input',e=>{
   if(document.getElementById('cardLogoImg').style.display!=='block')
-    document.getElementById('cardBankName').textContent =
-      e.target.value.trim().toUpperCase()||'BANCO EMISOR';
+    document.getElementById('cardBankName').textContent=e.target.value.trim().toUpperCase()||'BANCO EMISOR';
 });
-document.getElementById('iExpiry').addEventListener('input', e=>{
+document.getElementById('iExpiry').addEventListener('input',e=>{
   let v=e.target.value.replace(/\D/g,'');
-  if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2,4);
+  if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2,4);
   e.target.value=v;
   document.getElementById('cardExpiry').textContent=v||'••/••';
   updateAwards();
@@ -803,11 +1153,8 @@ function generateNumber(){
   const raw=[g(),g(),g(),g()];
   state.rawNumber=raw.join(' ');
   document.getElementById('numDisplay').textContent=state.rawNumber;
-  document.getElementById('cardNumber').innerHTML=
-    raw.map((p,i)=>`<span>${i===2?'••••':p}</span>`).join('');
+  document.getElementById('cardNumber').innerHTML=raw.map((p,i)=>`<span>${i===2?'••••':p}</span>`).join('');
 }
-
-/* ── CVV ── */
 function generateCVV(){
   document.getElementById('cardCVV').textContent=String(Math.floor(100+Math.random()*900));
 }
@@ -821,7 +1168,7 @@ function pickColor(el){
   document.getElementById('colorPicker').value=state.color;
 }
 function pickCustomColor(hex){
-  state.color=hex; applyBg(hex);
+  state.color=hex;applyBg(hex);
   document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
   document.querySelector('.swatch-custom').classList.add('active');
 }
@@ -837,7 +1184,7 @@ function pickNet(el){
   document.querySelectorAll('.net-chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
   state.network=el.dataset.net;
-  renderNet(state.network); updateAwards();
+  renderNet(state.network);updateAwards();
 }
 function renderNet(net){
   const b=document.getElementById('netBadge');
@@ -855,14 +1202,14 @@ function setScenario(el){
   const sc=el.dataset.sc;
   document.querySelectorAll('.sc-chip').forEach(c=>c.className='sc-chip');
   const map={approved:'ok',declined:'fail',expired:'exp',funds:'funds'};
-  if(map[sc]) el.classList.add(map[sc]);
+  if(map[sc])el.classList.add(map[sc]);
   state.scenario=sc;
   const badge=document.getElementById('cardStatus');
   badge.className='card-status';
   const labels={approved:'Aprobada',declined:'Rechazada',expired:'Vencida',funds:'Sin fondos'};
-  const colors={approved:'#0f2a1a',declined:'#2a0f0f',expired:'#2a1a08',funds:'#1a0f2a'};
+  const colors={approved:'#0a2a1a',declined:'#2a0a0a',expired:'#2a1a05',funds:'#1a0a2a'};
   if(sc!=='none'){
-    badge.textContent=labels[sc]; badge.classList.add('show',sc);
+    badge.textContent=labels[sc];badge.classList.add('show',sc);
     applyBg(colors[sc]);
   } else {
     applyBg(state.color);
@@ -871,14 +1218,14 @@ function setScenario(el){
 
 /* ── LOGO ── */
 function handleLogo(inp){
-  const f=inp.files[0]; if(!f) return;
+  const f=inp.files[0];if(!f)return;
   if(f.size>2097152){showToast('Archivo supera 2MB','err');return}
   if(!['image/png','image/jpeg','image/svg+xml'].includes(f.type)){showToast('Formato no válido','err');return}
   document.getElementById('fileName').textContent=`✓ ${f.name}`;
   const fr=new FileReader();
   fr.onload=e=>{
     const img=document.getElementById('cardLogoImg');
-    img.src=e.target.result; img.style.display='block';
+    img.src=e.target.result;img.style.display='block';
     document.getElementById('cardBankName').style.display='none';
   };
   fr.readAsDataURL(f);
@@ -886,25 +1233,26 @@ function handleLogo(inp){
 
 /* ── FLIP ── */
 function flipCard(){
-  const s=document.getElementById('cardScene');
-  flipper.style.transition='transform .7s cubic-bezier(.4,0,.2,1)';
-  s.classList.toggle('flipped');
+  flipper.style.transition='transform .75s cubic-bezier(.4,0,.2,1)';
+  scene.classList.toggle('flipped');
 }
 
 /* ── APPLY ── */
 function applyCard(toast=true){
   const name=document.getElementById('iName').value.trim().toUpperCase()||'NOMBRE APELLIDO';
   const bank=document.getElementById('iBank').value.trim().toUpperCase()||'BANCO EMISOR';
-  const exp =document.getElementById('iExpiry').value||'12/28';
+  const exp=document.getElementById('iExpiry').value||'12/28';
   document.getElementById('cardHolder').textContent=name;
   if(document.getElementById('cardLogoImg').style.display!=='block')
     document.getElementById('cardBankName').textContent=bank;
   document.getElementById('cardExpiry').textContent=exp;
   renderNet(state.network);
-  if(state.scenario==='none') applyBg(state.color);
+  if(state.scenario==='none')applyBg(state.color);
   generateCVV();
-  state.count++; updateAwards();
-  if(toast) showToast('Cambios aplicados','ok');
+  state.count++;
+  saveToHistory();
+  updateAwards();
+  if(toast)showToast('Cambios aplicados','ok');
 }
 
 /* ── AWARDS ── */
@@ -934,10 +1282,9 @@ function resetAll(){
   document.querySelectorAll('.sc-chip').forEach(c=>c.className='sc-chip');
   document.querySelectorAll('.swatch').forEach((s,i)=>s.classList.toggle('active',i===0));
   document.getElementById('cardStatus').className='card-status';
-  const s=document.getElementById('cardScene');
-  s.classList.remove('flipped');
-  flipper.style.transition='none'; flipper.style.transform='';
-  generateNumber(); applyCard(false);
+  scene.classList.remove('flipped');
+  flipper.style.transition='none';flipper.style.transform='';
+  generateNumber();applyCard(false);
   showToast('Reiniciado','ok');
 }
 
@@ -945,11 +1292,10 @@ function resetAll(){
 async function downloadCard(){
   const btn=document.getElementById('btnDl');
   const ov=document.getElementById('dlOverlay');
-  const s=document.getElementById('cardScene');
-  const was=s.classList.contains('flipped');
-  if(was){s.classList.remove('flipped');flipper.style.transition='transform .7s cubic-bezier(.4,0,.2,1)'}
-  flipper.style.transform=''; 
-  btn.disabled=true; ov.classList.add('show');
+  const was=scene.classList.contains('flipped');
+  if(was){scene.classList.remove('flipped');flipper.style.transition='transform .7s cubic-bezier(.4,0,.2,1)'}
+  flipper.style.transform='';
+  btn.disabled=true;ov.classList.add('show');
   await new Promise(r=>setTimeout(r,was?450:60));
   try{
     const canvas=await html2canvas(document.getElementById('cardFront'),{
@@ -958,8 +1304,8 @@ async function downloadCard(){
     const name=(document.getElementById('iName').value.trim()||'tarjeta')
       .toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
     const a=document.createElement('a');
-    a.download=`cardforge-${name}.png`; a.href=canvas.toDataURL('image/png'); a.click();
-    state.downloads++; updateAwards();
+    a.download=`cardforge-${name}.png`;a.href=canvas.toDataURL('image/png');a.click();
+    state.downloads++;updateAwards();
     showToast('PNG descargado','ok');
   }catch(e){showToast('Error al generar imagen','err');console.error(e)}
   finally{ov.classList.remove('show');btn.disabled=false}
@@ -967,31 +1313,33 @@ async function downloadCard(){
 
 /* ── COPY ── */
 async function copyText(txt){
-  if(!txt||txt.includes('•')) return;
-  try{await navigator.clipboard.writeText(txt.replace(/\s+/g,''));showToast('Copiado','Ok')}
+  if(!txt||txt.includes('•'))return;
+  try{await navigator.clipboard.writeText(txt.replace(/\s+/g,''));showToast('Copiado al portapapeles','ok')}
   catch{showToast('No se pudo copiar','err')}
 }
 
 /* ── TOAST ── */
 let tTO;
 function showToast(msg,type='ok'){
-
   const el=document.getElementById('toast');
   document.getElementById('tMsg').textContent=msg;
   el.className=`show ${type}`;
-  clearTimeout(tTO); tTO=setTimeout(()=>{el.className=''},2500);
+  clearTimeout(tTO);tTO=setTimeout(()=>{el.className=''},2500);
 }
 
 /* ── DRAG DROP ── */
 const fd=document.getElementById('fileDrop');
-fd.addEventListener('dragover',e=>{e.preventDefault();fd.style.borderColor='var(--muted)'});
+fd.addEventListener('dragover',e=>{e.preventDefault();fd.style.borderColor='var(--accent)'});
 fd.addEventListener('dragleave',()=>{fd.style.borderColor=''});
 fd.addEventListener('drop',e=>{
   e.preventDefault();fd.style.borderColor='';
-  const f=e.dataTransfer.files[0]; if(!f) return;
+  const f=e.dataTransfer.files[0];if(!f)return;
   const dt=new DataTransfer();dt.items.add(f);
   const inp=document.getElementById('iLogo');inp.files=dt.files;handleLogo(inp);
 });
+
+/* ── INIT ── */
+generateNumber();generateCVV();applyCard(false);
 </script>
 </body>
 </html>
